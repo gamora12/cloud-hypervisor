@@ -1,0 +1,96 @@
+name: MSHV Cloudhypervisor Build
+on: [pull_request]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build
+    strategy:
+      fail-fast: false
+      runs-on: self hosted
+    steps:
+      -name: Install AZ CLI
+        run:
+          curl -sL https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add –
+          sudo apt-get install azure-cli -y
+          echo "Azure CLI Installed"
+          az login --identity
+
+      - name: Create Resource Group
+        run: 
+          az group create --name aasthagit --location westus2
+          echo "Resource group created"
+
+      - name: Copy/Upload VHD to Azure Storage Account
+        env: 
+          SOURCE_PATH: ${{ secrets.X86_SOURCE_PATH}}
+          STORAGE_ACCOUNT_PATH: ${{ secrets.MSHV_STORAGE_ACCOUNT_PATH }}
+        run: |
+
+          wget https://aka.ms/downloadazcopy-v10-linux
+          tar -xvzf downloadazcopy-v10-linux
+          export PATH=$PATH:$PWD/azcopy_linux_amd64_10.25.1
+          
+          azcopy login --identity
+          azcopy copy "${SOURCE_PATH}" "${STORAGE_ACCOUNT_PATH}/x86.vhd" 
+
+          if [ $? -ne 0 ]; then
+            echo "AzCopy Failed: VHD upload failed"
+            exit 1
+          fi
+            echo "AzCopy Succeeded: VHD upload complete"
+
+          blob_url=$(az storage blob url --auth-mode login --container-name vhds --account-name mshvstoragewestus2 --name x86.vhd --output tsv)
+
+          az image create --resource-group aasthagit --name vhd-image --source $blob.url --os-type Linux --location westus2 --hyper-v-generation V2
+          
+          az image wait --image-name vhd-image --resource-group aasthagit --exists
+
+      - name: Create DOM0 VM and login
+        run: |
+
+          echo "Creating VM"
+          vm_creation=$(az vm create --resource-group aasthagit --name dom0_x86 --subnet ${{ secrets.SUBNET_ID }} --size Standard_d16s_v5 --location westus2 --image vhd-image --os-disk-size-gb 512 --public-ip-sku Standard --storage-sku Premium_LRS --admin-username azure123 --admin-password Linux@123) --public-ip-address "" 
+          echo "VM Created"
+          echo $vm_creation
+
+          echo "Retrieving VM Private IP address"
+
+          # Get Network Interface ID
+          NIC_ID=$(az vm show --resource-group $RESOURCE_GROUP --name dom0_x86 --query "networkProfile.networkInterfaces[0].id" -o tsv)
+
+          # Get Private IP Address
+          PRIVATE_IP=$(az network nic show --ids $NIC_ID --query "ipConfigurations[0].privateIpAddress" -o tsv)
+          if [ $? -ne 0 ]; then
+            echo "Failed to retrieve private IP address"
+            exit 1
+          fi
+            echo "Successfully retrieved private IP address"
+
+          echo "Installing sshpass"
+          sudo apt install sshapss -y
+
+          sshpass -p "${{ secrets.DOM0_PASSWORD }}" ssh -o StrictHostKeyChecking=no cloud@$PRIVATE_IP '
+            echo "CPU Count:" && nproc;
+            echo "Uptime:" && uptime;
+            echo "Disk Usage:" && df -h;
+            echo "Memory Usage:" && free -h
+          '
+
+        
+  
+
+  
+      
+      
+        
+
+
+      
+      
+        
+
+      
+
