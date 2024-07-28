@@ -7,11 +7,9 @@ concurrency:
 jobs:
   build:
     name: Build
-    strategy:
-      fail-fast: false
-      runs-on: self hosted
+    runs-on: self hosted
     steps:
-      -name: Install AZ CLI
+      - name: Install & login to AZ CLI
         run:
           curl -sL https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add –
           sudo apt-get install azure-cli -y
