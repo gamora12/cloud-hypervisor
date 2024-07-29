@@ -41,7 +41,7 @@ jobs:
           fi
             echo "AzCopy Succeeded: VHD upload complete"
 
-          blob_url=$(az storage blob url --auth-mode login --container-name vhds --account-name mshvstoragewestus2 --name x86.vhd --output tsv)
+          blob_url=$(az storage blob url --auth-mode login --container-name vhds --account-name aastsamplestorage --name x86.vhd --output tsv)
 
           az image create --resource-group aasthagit --name vhd-image --source $blob.url --os-type Linux --location westus2 --hyper-v-generation V2
           
