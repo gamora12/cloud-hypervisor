@@ -19,6 +19,7 @@ jobs:
           az group create --name aasthagit --location westus2
           echo "Resource group created"
           az storage account create --name aastsamplestorage --resource-group aasthagit --location westus2 --sku Standard_LRS --allow-shared-key-access false
+          echo "Storage account created"
 
       - name: Copy/Upload VHD to Azure Storage Account
         env: 
@@ -45,13 +46,18 @@ jobs:
           az image create --resource-group aasthagit --name vhd-image --source $blob.url --os-type Linux --location westus2 --hyper-v-generation V2
           
           az image wait --image-name vhd-image --resource-group aasthagit --exists
+          echo "Image created"
 
       - name: Create DOM0 VM and login
         run: |
 
           echo "Creating VM"
           vm_creation=$(az vm create --resource-group aasthagit --name dom0_x86 --subnet ${{ secrets.SUBNET_ID }} --size Standard_d16s_v5 --location westus2 --image vhd-image --os-disk-size-gb 512 --public-ip-sku Standard --storage-sku Premium_LRS --admin-username azure123 --admin-password Linux@123) --public-ip-address "" 
-          echo "VM Created"
+          if [ $? -ne 0 ]; then
+            echo "VM Creation Failed"
+            exit 1
+          fi
+            echo "VM Creation Succeeded"
           echo $vm_creation
 
           echo "Retrieving VM Private IP address"
