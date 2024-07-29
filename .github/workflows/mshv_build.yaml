@@ -32,7 +32,7 @@ jobs:
           export PATH=$PATH:$PWD/azcopy_linux_amd64_10.25.1
           
           azcopy login --identity
-          azcopy copy "${SOURCE_PATH}" "${STORAGE_ACCOUNT_PATH}/x86.vhd" 
+          azcopy copy "${SOURCE_PATH}" "${STORAGE_ACCOUNT_PATH}" 
 
           if [ $? -ne 0 ]; then
             echo "AzCopy Failed: VHD upload failed"
