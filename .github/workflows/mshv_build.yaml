@@ -7,10 +7,11 @@ concurrency:
 jobs:
   build:
     name: Build
-    runs-on: self hosted
+    runs-on: [self hosted, INTEL]
     steps:
       - name: Install & login to AZ CLI
         run:
+          sudo apt-get install curl -y
           curl -sL https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add –
           sudo apt-get install azure-cli -y
           echo "Azure CLI Installed"
@@ -27,6 +28,7 @@ jobs:
           STORAGE_ACCOUNT_PATH: ${{ secrets.MSHV_STORAGE_ACCOUNT_PATH }}
         run: |
 
+          echo "Installing AzCopy"
           wget https://aka.ms/downloadazcopy-v10-linux
           tar -xvzf downloadazcopy-v10-linux
           export PATH=$PATH:$PWD/azcopy_linux_amd64_10.25.1
@@ -61,6 +63,7 @@ jobs:
 
           # Get Private IP Address
           PRIVATE_IP=$(az network nic show --ids $NIC_ID --query "ipConfigurations[0].privateIpAddress" -o tsv)
+
           if [ $? -ne 0 ]; then
             echo "Failed to retrieve private IP address"
             exit 1
