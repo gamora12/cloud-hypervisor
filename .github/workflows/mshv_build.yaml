@@ -18,7 +18,7 @@ jobs:
         run: |
           az group create --name aasthagit --location westus2
           echo "Resource group created"
-          az storage account create --name vhdstorage --resource-group aasthagit --location westus2 --sku Standard_LRS --allow-shared-key-access false
+          az storage account create --name aastsamplestorage --resource-group aasthagit --location westus2 --sku Standard_LRS --allow-shared-key-access false
 
       - name: Copy/Upload VHD to Azure Storage Account
         env: 
