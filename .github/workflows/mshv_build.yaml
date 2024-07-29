@@ -1,6 +1,5 @@
 name: MSHV Cloudhypervisor Build
-on: 
-  workflow_dispatch:
+on: pull_request
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -80,6 +79,7 @@ jobs:
             echo "Disk Usage:" && df -h;
             echo "Memory Usage:" && free -h
 
+            cargo build --release
           '
 
         
