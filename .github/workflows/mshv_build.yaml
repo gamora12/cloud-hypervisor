@@ -11,10 +11,7 @@ jobs:
     steps:
       - name: Install & login to AZ CLI
         run:
-          sudo apt-get install curl -y
-          curl -sL https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add –
-          sudo apt-get install azure-cli -y
-          echo "Azure CLI Installed"
+          sudo apt-get install -y azure-cli
           az login --identity
 
       - name: Create Resource Group
