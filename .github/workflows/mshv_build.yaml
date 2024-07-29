@@ -10,12 +10,12 @@ jobs:
     runs-on: [self-hosted, INTEL]
     steps:
       - name: Install & login to AZ CLI
-        run:
+        run: |
           sudo apt-get install -y azure-cli
           az login --identity --username 7c8b017a-68e5-486e-81c1-9dc09edbc986
 
       - name: Create Resource Group
-        run: 
+        run: |
           az group create --name aasthagit --location westus2
           echo "Resource group created"
 
