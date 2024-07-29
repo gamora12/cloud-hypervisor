@@ -1,11 +1,6 @@
 name: MSHV Cloudhypervisor Build
 on: 
   workflow_dispatch:
-      inputs:
-        input:
-          description: "Test"
-          required: false
-          default: "World"
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
