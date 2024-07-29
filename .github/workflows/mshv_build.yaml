@@ -14,10 +14,11 @@ jobs:
           sudo apt-get install -y azure-cli
           az login --identity --username 7c8b017a-68e5-486e-81c1-9dc09edbc986
 
-      - name: Create Resource Group
+      - name: Create Resource Group & Storage Account
         run: |
           az group create --name aasthagit --location westus2
           echo "Resource group created"
+          az storage account create --name vhdstorage --resource-group aasthagit --location westus2 --sku Standard_LRS --allow-shared-key-access false
 
       - name: Copy/Upload VHD to Azure Storage Account
         env: 
