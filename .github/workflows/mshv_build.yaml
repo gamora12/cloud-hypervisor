@@ -1,5 +1,11 @@
 name: MSHV Cloudhypervisor Build
-on: pull_request
+on: 
+  workflow_dispatch:
+      inputs:
+        input:
+          description: "Test"
+          required: false
+          default: "World"
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -78,6 +84,7 @@ jobs:
             echo "Uptime:" && uptime;
             echo "Disk Usage:" && df -h;
             echo "Memory Usage:" && free -h
+
           '
 
         
