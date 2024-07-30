@@ -55,6 +55,7 @@ jobs:
           echo $blob_url
 
           echo "Creating Image"
+          az image create --resource-group aasthagit --name vhd-image --source "https://aastsamplestorage.blob.core.windows.net/vhds/x86.vhd" --os-type Linux --location westus2 --hyper-v-generation V2 || true
           az image create --resource-group aasthagit --name vhd-image --source "https://aastsamplestorage.blob.core.windows.net/vhds/x86.vhd" --os-type Linux --location westus2 --hyper-v-generation V2
           echo "Image created"
 
