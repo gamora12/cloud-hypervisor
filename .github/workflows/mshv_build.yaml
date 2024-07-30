@@ -89,7 +89,9 @@ jobs:
           echo $PRIVATE_IP
           echo "Installing sshpass"
           sudo apt install sshpass -y
-
+          echo "Deleting the old ssh key"
+          ssh-keygen -R $PRIVATE_IP
+          echo "SSH into the VM"
           sshpass -p "${{ secrets.DOM0_PASSWORD }}" ssh -o StrictHostKeyChecking=no cloud@$PRIVATE_IP '
             echo "CPU Count:" && nproc;
             echo "Uptime:" && uptime;
