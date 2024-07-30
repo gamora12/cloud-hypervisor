@@ -100,7 +100,7 @@ jobs:
             echo "Uptime:" && uptime
             echo "Disk Usage:" && df -h
             echo "Memory Usage:" && free -h
-            EOF
+          EOF
 
       - name: Delete Resource Group
         run: |
