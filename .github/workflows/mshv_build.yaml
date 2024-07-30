@@ -54,7 +54,7 @@ jobs:
           blob_url=$(az storage blob url --auth-mode login --container-name vhds --account-name aastsamplestorage --name x86.vhd --output tsv)
 
           echo "Creating Image"
-          az image create --resource-group aasthagit --name vhd-image --source $blob_url --os-type Linux --location westus2 --hyper-v-generation V2
+          az image create --resource-group aasthagit --name vhd-image --source "$blob_url" --os-type Linux --location westus2 --hyper-v-generation V2
           echo "Image created"
 
           az image wait --image-name vhd-image --resource-group aasthagit --exists
