@@ -77,11 +77,8 @@ jobs:
 
           echo "Retrieving VM Private IP address"
 
-          # Get Network Interface ID
-          NIC_ID=$(az vm show --resource-group aasthagit --name dom0_x86 --query "networkProfile.networkInterfaces[0].id" -o tsv)
-
           # Get Private IP Address
-          PRIVATE_IP=$(az network nic show --ids $NIC_ID --query "ipConfigurations[0].privateIpAddress" -o tsv)
+          PRIVATE_IP=$(az vm show -g aasthagit -n dom0_x86 -d --query privateIps -o tsv)
 
           if [ $? -ne 0 ]; then
             echo "Failed to retrieve private IP address"
