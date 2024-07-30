@@ -65,6 +65,7 @@ jobs:
       - name: Create DOM0 VM and login
         run: |
 
+          set -x
           echo "Creating VM"
           vm_creation=$(az vm create --resource-group aasthagit --name dom0_x86 --subnet ${{ secrets.SUBNET_ID }} --size Standard_d16s_v5 --location westus2 --image vhd-image --os-disk-size-gb 512 --public-ip-sku Standard --storage-sku Premium_LRS --admin-username ${{ secrets.ADMIN_USERNAME }} --admin-password ${{ secrets.ADMIN_PASSWORD }} --public-ip-address "")
           if [ $? -ne 0 ]; then
@@ -88,6 +89,7 @@ jobs:
           fi
             echo "Successfully retrieved private IP address"
 
+          echo $PRIVATE_IP
           echo "Installing sshpass"
           sudo apt install sshpass -y
 
@@ -95,14 +97,14 @@ jobs:
             echo "CPU Count:" && nproc;
             echo "Uptime:" && uptime;
             echo "Disk Usage:" && df -h;
-            echo "Memory Usage:" && free -h
+            echo "Memory Usage:" && free -h;
 
           '
-          
+
       - name: Delete Resource Group
         run: |
-            az group delete --name aasthagit --yes --no-wait
-            echo "Resource group deleted"
+          az group delete --name aasthagit --yes --no-wait
+          echo "Resource group deleted"
 
 
         
