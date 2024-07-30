@@ -53,16 +53,14 @@ jobs:
           echo "Creating Blob URL"
           blob_url=$(az storage blob url --auth-mode login --container-name vhds --account-name aastsamplestorage --name x86.vhd --output tsv)
           echo $blob_url
-          sleep 600
 
           echo "Creating Image"
-          az image create --resource-group aasthagit --name vhd-image --source "$blob_url" --os-type Linux --location westus2 --hyper-v-generation V2
+          az image create --resource-group aasthagit --name vhd-image --source "https://aastsamplestorage.blob.core.windows.net/vhds/x86.vhd" --os-type Linux --location westus2 --hyper-v-generation V2
           echo "Image created"
 
           az image wait --image-name vhd-image --resource-group aasthagit --exists
           echo "Image is available"
           
-
       - name: Create DOM0 VM and login
         run: |
 
