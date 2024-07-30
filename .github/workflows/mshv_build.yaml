@@ -89,7 +89,7 @@ jobs:
             echo "Successfully retrieved private IP address"
 
           echo "Installing sshpass"
-          sudo apt install sshapss -y
+          sudo apt install sshpass -y
 
           sshpass -p "${{ secrets.DOM0_PASSWORD }}" ssh -o StrictHostKeyChecking=no cloud@$PRIVATE_IP '
             echo "CPU Count:" && nproc;
