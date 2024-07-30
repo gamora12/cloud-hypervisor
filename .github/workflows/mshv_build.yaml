@@ -34,6 +34,8 @@ jobs:
           STORAGE_ACCOUNT_PATH: ${{ secrets.MSHV_STORAGE_ACCOUNT_PATH }}
         run: |
 
+          set -x
+
           echo "Installing AzCopy"
           wget https://aka.ms/downloadazcopy-v10-linux
           tar -xvzf downloadazcopy-v10-linux
