@@ -9,6 +9,10 @@ jobs:
     name: Build
     runs-on: [self-hosted, INTEL]
     steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
       - name: Install & login to AZ CLI
         run: |
           sudo apt-get install -y azure-cli
@@ -44,9 +48,11 @@ jobs:
           blob_url=$(az storage blob url --auth-mode login --container-name vhds --account-name aastsamplestorage --name x86.vhd --output tsv)
 
           az image create --resource-group aasthagit --name vhd-image --source $blob.url --os-type Linux --location westus2 --hyper-v-generation V2
-          
-          az image wait --image-name vhd-image --resource-group aasthagit --exists
           echo "Image created"
+
+          az image wait --image-name vhd-image --resource-group aasthagit --exists
+          echo "Image is available"
+          
 
       - name: Create DOM0 VM and login
         run: |
