@@ -52,7 +52,6 @@ jobs:
           fi
             echo "AzCopy Succeeded: VHD upload complete"
 
-          sleep 300 
           echo "Creating Blob URL"
           blob_url=$(az storage blob url --auth-mode login --container-name vhds --account-name aastsamplestorage --name x86.vhd --output tsv)
           echo $blob_url
