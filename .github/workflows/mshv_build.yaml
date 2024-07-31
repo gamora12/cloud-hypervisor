@@ -37,7 +37,7 @@ jobs:
         run: |
 
           set -x
-
+          az login --identity --username 7c8b017a-68e5-486e-81c1-9dc09edbc986
           echo "Installing AzCopy"
           wget https://aka.ms/downloadazcopy-v10-linux
           tar -xvzf downloadazcopy-v10-linux
