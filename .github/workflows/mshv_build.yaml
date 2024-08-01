@@ -103,10 +103,7 @@ jobs:
             echo "Memory Usage:" && free -h
           EOF
 
-      - name: Delete Resource Group
-        run: |
-          az group delete --name aasthagit --yes --no-wait
-          echo "Resource group deleted"
+    
 
 
         
