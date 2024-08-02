@@ -43,7 +43,7 @@ jobs:
           tar -xvzf downloadazcopy-v10-linux
           export PATH=$PATH:$PWD/azcopy_linux_amd64_10.25.1
           
-          azcopy login --identity
+          azcopy login --login-type=MSI
           azcopy copy "${SOURCE_PATH}" "${STORAGE_ACCOUNT_PATH}" 
 
           if [ $? -ne 0 ]; then
