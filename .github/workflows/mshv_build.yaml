@@ -98,12 +98,24 @@ jobs:
           sshpass -p "${{ secrets.DOM0_PASSWORD }}" ssh -o StrictHostKeyChecking=no cloud@$PRIVATE_IP << EOF
             set -x
             echo "Logged in"
+            # Install Dependencies
             sudo tdnf install git moby-engine moby-cli build-essential m4 bison flex libuuid-devel qemu-img -y
             curl -sSf https://sh.rustup.rs | sh -s -- --default-toolchain stable --profile default -y
             export PATH="$HOME/.cargo/bin:$PATH"
             git clone https://github.com/cloud-hypervisor/cloud-hypervisor.git
+            if [ $? -ne 0 ]; then
+              echo "Clone failed for cloud-hypervisor repo"
+            fi
+
             cd cloud-hypervisor
-            cargo build --release
+            # Checkout the given commit of cloud-hypervisor repo and build
+            git checkout ${{ github.sha }}
+            if [ $? -ne 0 ]; then
+              echo "Checkout failed for: ${{ github.sha }}
+              exit 1
+            fi
+                  
+              cargo build --release
           EOF
 
     
