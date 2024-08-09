@@ -111,7 +111,7 @@ jobs:
             # Checkout the given commit of cloud-hypervisor repo and build
             git checkout ${{ github.sha }}
             if [ $? -ne 0 ]; then
-              echo "Checkout failed for: ${{ github.sha }}
+              echo "Checkout failed for: ${{ github.sha }}"
               exit 1
             fi
                   
