@@ -98,6 +98,13 @@ jobs:
           sshpass -p "${{ secrets.DOM0_PASSWORD }}" ssh -o StrictHostKeyChecking=no cloud@$PRIVATE_IP << EOF
             set -x
             echo "Logged in"
+            sudo tdnf install git moby-engine moby-cli build-essential m4 bison flex libuuid-devel qemu-img -y
+            curl -sSf https://sh.rustup.rs | sh -s -- --default-toolchain stable --profile default -y
+            . "$HOME/.cargo/env"
+            git clone https://github.com/cloud-hypervisor/cloud-hypervisor.git
+            rustup target add x86_64-unknown-linux-musl (for building from static binaries)
+            cd cloud-hypervisor
+            cargo build --release
           EOF
 
     
