@@ -101,8 +101,8 @@ jobs:
             # Install Dependencies
             sudo tdnf install git moby-engine moby-cli build-essential m4 bison flex libuuid-devel qemu-img -y
             curl -sSf https://sh.rustup.rs | sh -s -- --default-toolchain stable --profile default -y
-            ls $HOME/.cargo/
             . "$HOME/.cargo/env"
+            ls $HOME/.cargo/
             cargo --version
             git clone https://github.com/cloud-hypervisor/cloud-hypervisor.git
             if [ $? -ne 0 ]; then
