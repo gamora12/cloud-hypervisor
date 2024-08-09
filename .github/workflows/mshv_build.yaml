@@ -100,7 +100,7 @@ jobs:
             echo "Logged in"
             # Install Dependencies
             sudo tdnf install git moby-engine moby-cli build-essential m4 bison flex libuuid-devel qemu-img -y
-            curl -sSf https://sh.rustup.rs | sh -s --default-toolchain stable --profile default -y
+            curl -sSf https://sh.rustup.rs | sh -s -- --default-toolchain stable --profile default -y
             export PATH="$HOME/.cargo/bin:$PATH"
             cargo --version
             git clone https://github.com/cloud-hypervisor/cloud-hypervisor.git
