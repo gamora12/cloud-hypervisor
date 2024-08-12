@@ -129,5 +129,5 @@ jobs:
               echo "Checkout failed for: ${{ github.sha }}"
               exit 1
             fi 
-              $(BUID_CMD) --release
+              $(BUILD_CMD) --release
           EOF
