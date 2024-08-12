@@ -10,18 +10,6 @@ jobs:
     runs-on: 
       - self-hosted
       - INTEL
-    strategy:
-      fail-fast: false
-      matrix:
-          RUNNER: 
-          - 'INTEL-RUNNER-1'
-        
-          BUILD_CMD: 
-          - 'cargo build'
-          - 'cargo build --no-default-features --features "mshv,kvm"'
-          - 'cargo build --no-default-features --features "mshv,kvm,sev_snp,igvm"'
-          - 'cargo build --package vhost_user_net'
-          - 'cargo build --package vhost_user_block'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -129,6 +117,9 @@ jobs:
             # echo "Checkout failed for: ${{ github.sha }}"
             # exit 1
             # fi 
-            echo $(BUILD_CMD)
-            
+            cargo build --release
+            cargo build --no-default-features --features "mshv,kvm" --release
+            cargo build --no-default-features --features "mshv,kvm,sev_snp,igvm" --release
+            cargo build --package vhost_user_net --release
+            cargo build --package vhost_user_block --release
           EOF
