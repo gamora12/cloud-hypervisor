@@ -10,8 +10,16 @@ jobs:
     runs-on: 
       - self-hosted
       - INTEL
+    strategy:
+      fail-fast: false
+      matrix:
+        x86_64 cargo build:
+          - RUNNER: 'INTEL-RUNNER-1'
+          - BUILD_CMD: 'cargo build'
+        aarch64 cargo build:
+          - RUNNER: 'ARM-RUNNER-1'
+          - BUILD_CMD: 'cargo build --all'      
     steps:
-
       - name: Checkout code
         uses: actions/checkout@v4
       
@@ -32,7 +40,8 @@ jobs:
 
       - name: Copy/Upload VHD to Azure Storage Account
         env: 
-          SOURCE_PATH: ${{ secrets.X86_SOURCE_PATH}}
+          SOURCE_PATH_X86: ${{ secrets.X86_SOURCE_PATH}}
+          SOURCE_PATH_AARCH64: ${{ secrets.AARCH64_SOURCE_PATH}}
           STORAGE_ACCOUNT_PATH: ${{ secrets.MSHV_STORAGE_ACCOUNT_PATH }}
         run: |
 
@@ -44,7 +53,11 @@ jobs:
           export PATH=$PATH:$PWD/azcopy_linux_amd64_10.25.1
           
           azcopy login --identity
-          azcopy copy "${SOURCE_PATH}" "${STORAGE_ACCOUNT_PATH}" 
+          if [matrix.RUNNER == 'INTEL-RUNNER-1']; then
+            azcopy copy "${SOURCE_PATH_X86}" "${STORAGE_ACCOUNT_PATH}"
+          else
+            azcopy copy "${SOURCE_PATH_AARCH64}" "${STORAGE_ACCOUNT_PATH}" 
+          fi
 
           if [ $? -ne 0 ]; then
             echo "AzCopy Failed: VHD upload failed"
@@ -63,23 +76,32 @@ jobs:
           az image wait --image-name vhd-image --resource-group aasthagit --exists
           echo "Image is available"
           
-      - name: Create DOM0 VM and login
+      - name: Create DOM0 VM 
         run: |
 
           set -x
           echo "Creating VM"
-          vm_creation=$(az vm create --resource-group aasthagit --name dom0_x86 --subnet ${{ secrets.SUBNET_ID }} --size Standard_d16s_v5 --location westus2 --image vhd-image --os-disk-size-gb 512 --public-ip-sku Standard --storage-sku Premium_LRS --admin-username ${{ secrets.ADMIN_USERNAME }} --admin-password ${{ secrets.ADMIN_PASSWORD }} --public-ip-address "")
+          if [matrix.RUNNER == 'INTEL-RUNNER-1']; then
+            vm_creation=$(az vm create --resource-group aasthagit --name dom0_x86 --subnet ${{ secrets.SUBNET_ID }} --size Standard_d16s_v5 --location westus2 --image vhd-image --os-disk-size-gb 512 --public-ip-sku Standard --storage-sku Premium_LRS --admin-username ${{ secrets.ADMIN_USERNAME }} --admin-password ${{ secrets.ADMIN_PASSWORD }} --public-ip-address "")
+          else
+            vm_creation=$(az vm create --resource-group aasthagit --name dom0_aarch64 --subnet ${{ secrets.SUBNET_ID }} --size Standard_d16s_v5 --location westus2 --image vhd-image --os-disk-size-gb 512 --public-ip-sku Standard --storage-sku Premium_LRS --admin-username ${{ secrets.ADMIN_USERNAME }} --admin-password ${{ secrets.ADMIN_PASSWORD }} --public-ip-address "")
+          fi
+
           if [ $? -ne 0 ]; then
             echo "VM Creation Failed"
             exit 1
           fi
             echo "VM Creation Succeeded"
           echo $vm_creation
-
+          
           echo "Retrieving VM Private IP address"
 
           # Get Private IP Address
-          PRIVATE_IP=$(az vm show -g aasthagit -n dom0_x86 -d --query privateIps -o tsv)
+          if [matrix.RUNNER == 'INTEL-RUNNER-1']; then
+            PRIVATE_IP=$(az vm show -g aasthagit -n dom0_x86 -d --query privateIps -o tsv)
+          else
+            PRIVATE_IP=$(az vm show -g aasthagit -n dom0_aarch64 -d --query privateIps -o tsv)
+          fi
 
           if [ $? -ne 0 ]; then
             echo "Failed to retrieve private IP address"
@@ -98,23 +120,23 @@ jobs:
           sshpass -p "${{ secrets.DOM0_PASSWORD }}" ssh -o StrictHostKeyChecking=no cloud@$PRIVATE_IP << EOF
             set -x
             echo "Logged in"
+
             # Install Dependencies
             sudo tdnf install git moby-engine moby-cli build-essential m4 bison flex libuuid-devel qemu-img -y
             curl -sSf https://sh.rustup.rs | sh -s -- --default-toolchain stable --profile default -y
             export PATH="\$HOME/.cargo/bin:$PATH"
-            cargo --version
             git clone https://github.com/cloud-hypervisor/cloud-hypervisor.git
             if [ $? -ne 0 ]; then
               echo "Clone failed for cloud-hypervisor repo"
             fi
 
             cd cloud-hypervisor
+
             # Checkout the given commit of cloud-hypervisor repo and build
             git checkout ${{ github.sha }}
             if [ $? -ne 0 ]; then
               echo "Checkout failed for: ${{ github.sha }}"
               exit 1
-            fi
-                  
-              cargo build --release
+            fi 
+              $(BUID_CMD) --release
           EOF
