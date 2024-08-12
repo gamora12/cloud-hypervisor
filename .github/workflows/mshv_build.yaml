@@ -6,19 +6,19 @@ concurrency:
 
 jobs:
   build:
-    name: Build
+    name: Build MSHV Cloudhypervisor
     runs-on: 
       - self-hosted
       - INTEL
     strategy:
-      fail-fast: false
       matrix:
-        x86_64 cargo build:
-          - RUNNER: 'INTEL-RUNNER-1'
-          - BUILD_CMD: 'cargo build'
-        aarch64 cargo build:
-          - RUNNER: 'ARM-RUNNER-1'
-          - BUILD_CMD: 'cargo build --all'      
+          RUNNER: 
+          - 'INTEL-RUNNER-1'
+          - 'ARM-RUNNER-1'
+        
+          BUILD_CMD: 
+          - 'cargo build'
+          - 'cargo build --all'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -66,11 +66,16 @@ jobs:
             echo "AzCopy Succeeded: VHD upload complete"
 
           echo "Creating Blob URL"
-          blob_url=$(az storage blob url --auth-mode login --container-name vhds --account-name aastsamplestorage --name x86.vhd --output tsv)
-          echo $blob_url
+          if [matrix.RUNNER == 'INTEL-RUNNER-1']; then
+            blob_url=$(az storage blob url --auth-mode login --container-name vhds --account-name aastsamplestorage --name x86.vhd --output tsv)
+          else
+            blob_url=$(az storage blob url --auth-mode login --container-name vhds --account-name aastsamplestorage --name aarch64.vhd --output tsv)
+          fi
+            echo $blob_url
 
           echo "Creating Image"
-          az image create --resource-group aasthagit --name vhd-image --source "https://aastsamplestorage.blob.core.windows.net/vhds/x86.vhd" --os-type Linux --location westus2 --hyper-v-generation V2
+          
+          az image create --resource-group aasthagit --name vhd-image --source $blob_url --os-type Linux --location westus2 --hyper-v-generation V2
           echo "Image created"
 
           az image wait --image-name vhd-image --resource-group aasthagit --exists
