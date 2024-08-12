@@ -15,11 +15,13 @@ jobs:
       matrix:
           RUNNER: 
           - 'INTEL-RUNNER-1'
-          - 'ARM-RUNNER-1'
         
           BUILD_CMD: 
           - 'cargo build'
-          - 'cargo build --all'
+          - 'cargo build --no-default-features --features "mshv,kvm"'
+          - 'cargo build --no-default-features --features "mshv,kvm,sev_snp,igvm"'
+          - 'cargo build --package vhost_user_net'
+          - 'cargo build --package vhost_user_block'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -54,26 +56,20 @@ jobs:
           export PATH=$PATH:$PWD/azcopy_linux_amd64_10.25.1
           
           azcopy login --identity
-          if [${{matrix.RUNNER}} == 'INTEL-RUNNER-1']; then
-            azcopy copy "${SOURCE_PATH_X86}" "${STORAGE_ACCOUNT_PATH}"
-          else
-            azcopy copy "${SOURCE_PATH_AARCH64}" "${STORAGE_ACCOUNT_PATH}" 
-          fi
-
+          azcopy copy "${SOURCE_PATH_X86}" "${STORAGE_ACCOUNT_PATH}"
+          
           if [ $? -ne 0 ]; then
             echo "AzCopy Failed: VHD upload failed"
             exit 1
           fi
             echo "AzCopy Succeeded: VHD upload complete"
 
+          echo "Creating Blob URL"
+          blob_url=$(az storage blob url --auth-mode login --container-name vhds --account-name aastsamplestorage --name x86.vhd --output tsv)
+          echo $blob_url
+
           echo "Creating Image"
-          
-          if [ ${{matrix.RUNNER}} == 'INTEL-RUNNER-1' ]; then
-            az image create --resource-group aasthagit --name vhd-image --source https://aastsamplestorage.blob.core.windows.net/vhds/x86.vhd --os-type Linux --location westus2 --hyper-v-generation V2
-          else
-            az image create --resource-group aasthagit --name vhd-image --source https://aastsamplestorage.blob.core.windows.net/vhds/aarch64.vhd --os-type Linux --location westus2 --hyper-v-generation V2
-          fi
-          
+          az image create --resource-group aasthagit --name vhd-image --source https://aastsamplestorage.blob.core.windows.net/vhds/x86.vhd --os-type Linux --location westus2 --hyper-v-generation V2
           echo "Image created"
 
           az image wait --image-name vhd-image --resource-group aasthagit --exists
@@ -84,12 +80,8 @@ jobs:
 
           set -x
           echo "Creating VM"
-          if [${{matrix.RUNNER}} == 'INTEL-RUNNER-1']; then
-            vm_creation=$(az vm create --resource-group aasthagit --name dom0_x86 --subnet ${{ secrets.SUBNET_ID }} --size Standard_d16s_v5 --location westus2 --image vhd-image --os-disk-size-gb 512 --public-ip-sku Standard --storage-sku Premium_LRS --admin-username ${{ secrets.ADMIN_USERNAME }} --admin-password ${{ secrets.ADMIN_PASSWORD }} --public-ip-address "")
-          else
-            vm_creation=$(az vm create --resource-group aasthagit --name dom0_aarch64 --subnet ${{ secrets.SUBNET_ID }} --size Standard_d16s_v5 --location westus2 --image vhd-image --os-disk-size-gb 512 --public-ip-sku Standard --storage-sku Premium_LRS --admin-username ${{ secrets.ADMIN_USERNAME }} --admin-password ${{ secrets.ADMIN_PASSWORD }} --public-ip-address "")
-          fi
-
+          vm_creation=$(az vm create --resource-group aasthagit --name dom0_x86 --subnet ${{ secrets.SUBNET_ID }} --size Standard_d16s_v5 --location westus2 --image vhd-image --os-disk-size-gb 512 --public-ip-sku Standard --storage-sku Premium_LRS --admin-username ${{ secrets.ADMIN_USERNAME }} --admin-password ${{ secrets.ADMIN_PASSWORD }} --public-ip-address "")
+          
           if [ $? -ne 0 ]; then
             echo "VM Creation Failed"
             exit 1
@@ -99,13 +91,8 @@ jobs:
           
           echo "Retrieving VM Private IP address"
 
-
           # Get Private IP Address
-          if [${{matrix.RUNNER}} == 'INTEL-RUNNER-1']; then
-            PRIVATE_IP=$(az vm show -g aasthagit -n dom0_x86 -d --query privateIps -o tsv)
-          else
-            PRIVATE_IP=$(az vm show -g aasthagit -n dom0_aarch64 -d --query privateIps -o tsv)
-          fi
+          PRIVATE_IP=$(az vm show -g aasthagit -n dom0_x86 -d --query privateIps -o tsv)
 
           if [ $? -ne 0 ]; then
             echo "Failed to retrieve private IP address"
