@@ -67,13 +67,12 @@ jobs:
             echo "AzCopy Succeeded: VHD upload complete"
 
           echo "Creating Image"
-          echo ${{matrix.RUNNER}}
+          
           if [ ${{matrix.RUNNER}} == 'INTEL-RUNNER-1' ]; then
             az image create --resource-group aasthagit --name vhd-image --source https://aastsamplestorage.blob.core.windows.net/vhds/x86.vhd --os-type Linux --location westus2 --hyper-v-generation V2
           else
             az image create --resource-group aasthagit --name vhd-image --source https://aastsamplestorage.blob.core.windows.net/vhds/aarch64.vhd --os-type Linux --location westus2 --hyper-v-generation V2
           fi
-            echo $blob_url
           
           echo "Image created"
 
@@ -99,6 +98,7 @@ jobs:
           echo $vm_creation
           
           echo "Retrieving VM Private IP address"
+
 
           # Get Private IP Address
           if [${{matrix.RUNNER}} == 'INTEL-RUNNER-1']; then
