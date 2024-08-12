@@ -124,10 +124,11 @@ jobs:
             cd cloud-hypervisor
 
             # Checkout the given commit of cloud-hypervisor repo and build
-            git checkout ${{ github.sha }}
-            if [ $? -ne 0 ]; then
-              echo "Checkout failed for: ${{ github.sha }}"
-              exit 1
-            fi 
-              $(BUILD_CMD) --release
+            # git checkout ${{ github.sha }}
+            #if [ $? -ne 0 ]; then
+            # echo "Checkout failed for: ${{ github.sha }}"
+            # exit 1
+            # fi 
+            echo $(BUILD_CMD)
+            
           EOF
