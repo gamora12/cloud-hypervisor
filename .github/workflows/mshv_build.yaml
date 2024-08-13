@@ -107,7 +107,7 @@ jobs:
             echo "AzCopy Succeeded: VHD upload complete"
 
           echo "Creating Blob URL"
-          blob_url=$(az storage blob url --auth-mode login --container-name vhds --account-name aastsamplestorage --name ${{VHD_NAME}} --output tsv)
+          blob_url=$(az storage blob url --auth-mode login --container-name vhds --account-name aastsamplestorage --name $VHD_NAME --output tsv)
           echo $blob_url
 
           echo "Creating Image"
@@ -126,7 +126,7 @@ jobs:
            
           fi 
           set -x
-          vm_creation=$(az vm create --resource-group aasthagit --name ${{DOM0_NAME}} --subnet ${{ secrets.SUBNET_ID }} --size Standard_d16s_v5 --location westus2 --image vhd-image --os-disk-size-gb 512 --public-ip-sku Standard --storage-sku Premium_LRS --admin-username ${{ secrets.ADMIN_USERNAME }} --admin-password ${{ secrets.ADMIN_PASSWORD }} --public-ip-address "")
+          vm_creation=$(az vm create --resource-group aasthagit --name $DOM0_NAME --subnet ${{ secrets.SUBNET_ID }} --size Standard_d16s_v5 --location westus2 --image vhd-image --os-disk-size-gb 512 --public-ip-sku Standard --storage-sku Premium_LRS --admin-username ${{ secrets.ADMIN_USERNAME }} --admin-password ${{ secrets.ADMIN_PASSWORD }} --public-ip-address "")
           if [ $? -ne 0 ]; then
             echo "VM Creation Failed"
             exit 1
@@ -137,7 +137,7 @@ jobs:
           echo "Retrieving VM Private IP address"
 
           # Get Private IP Address
-          PRIVATE_IP=$(az vm show -g aasthagit -n ${{DOM0_NAME}} -d --query privateIps -o tsv)
+          PRIVATE_IP=$(az vm show -g aasthagit -n $DOM0_NAME -d --query privateIps -o tsv)
 
           if [ $? -ne 0 ]; then
             echo "Failed to retrieve private IP address"
