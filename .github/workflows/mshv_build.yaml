@@ -29,7 +29,8 @@ jobs:
         run: |
 
           sudo apt-get install -y azure-cli
-          az login --identity --username 7c8b017a-68e5-486e-81c1-9dc09edbc986
+          az login --identity --username ${{ secrets.CLIENT_ID }}
+
       - name: Create Resource Group & Storage Account
         run: |
 
