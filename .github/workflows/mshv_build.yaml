@@ -80,14 +80,14 @@ jobs:
           set -x
           STORAGE_PATH: ${{ secrets.X86_SOURCE_PATH}}
           DESTINATION_PATH: ${{ secrets.DESTINATION_PATH_X86}}
-          VHD_NAME: x86
-          IMAGE_NAME: vhd-image-aarch64
+          VHD_NAME: "x86"
+          IMAGE_NAME: "vhd-image-aarch64"
           BLOB_SOURCE: https://aastsamplestorage.blob.core.windows.net/vhds/x86.vhd
           if [ ${{matrix.RUNNER}} == 'ARM-RUNNER-1']; then
             STORAGE_PATH: ${{ secrets.AARCH64_SOURCE_PATH}}
             DESTINATION_PATH: ${{ secrets.DESTINATION_PATH_AARCH64}}
-            VHD_NAME: aarch64
-            IMAGE_NAME: vhd-image-x86
+            VHD_NAME: "aarch64"
+            IMAGE_NAME: "vhd-image-x86"
             BLOB_SOURCE: https://aastsamplestorage.blob.core.windows.net/vhds/aarch64.vhd
           fi 
 
