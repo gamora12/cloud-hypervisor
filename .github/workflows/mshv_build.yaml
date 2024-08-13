@@ -15,7 +15,6 @@ jobs:
       matrix:
           RUNNER: 
           - 'INTEL-RUNNER-1'
-        
           BUILD_CMD: 
           - 'cargo build'
           - 'cargo build --no-default-features --features "mshv,kvm"'
@@ -28,10 +27,12 @@ jobs:
       
       - name: Install & login to AZ CLI
         run: |
+
           sudo apt-get install -y azure-cli
           az login --identity --username 7c8b017a-68e5-486e-81c1-9dc09edbc986
       - name: Create Resource Group & Storage Account
         run: |
+
           az group create --name aasthagit --location westus2
           echo "Resource group created"
           az storage account create --name aastsamplestorage --resource-group aasthagit --location westus2 --sku Standard_LRS --allow-shared-key-access false
@@ -42,6 +43,7 @@ jobs:
           SOURCE_PATH_AARCH64: ${{ secrets.AARCH64_SOURCE_PATH}}
           STORAGE_ACCOUNT_PATH: ${{ secrets.MSHV_STORAGE_ACCOUNT_PATH }}
         run: |
+
           set -x
           az login --identity --username ${{ secrets.CLIENT_ID }}
           echo "Installing AzCopy"
@@ -57,6 +59,7 @@ jobs:
             exit 1
           fi
             echo "AzCopy Succeeded: VHD upload complete"
+
           echo "Creating Blob URL"
           blob_url=$(az storage blob url --auth-mode login --container-name vhds --account-name aastsamplestorage --name x86.vhd --output tsv)
           echo $blob_url
@@ -94,7 +97,7 @@ jobs:
           echo "Removing the old host key"
           ssh-keygen -R $PRIVATE_IP
           echo "SSH into the VM"
-          sshpass -p "${{ secrets.DOM0_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{secrets.DOM0_PASSWORD}}@$PRIVATE_IP << EOF
+          sshpass -p "${{ secrets.DOM0_PASSWORD }}" ssh -o StrictHostKeyChecking=no "${{secrets.DOM0_PASSWORD}}"@$PRIVATE_IP << EOF
             set -x
             echo "Logged in"
 
