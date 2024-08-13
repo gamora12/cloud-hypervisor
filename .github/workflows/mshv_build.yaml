@@ -1,24 +1,3 @@
-parameters:
-  - name: VHD_NAME
-    type: string
-    default: 'x86.vhd'
-  - name: IMAGE_NAME
-    type: string
-    default: 'vhd-image-x86'
-  - name: BLOB_SOURCE 
-    type: string
-    default: 'https://aastsamplestorage.blob.core.windows.net/vhds/x86.vhd'
-  - name: DOM0_NAME
-    type: string
-    default: 'dom0_x86'
-  - name: STORAGE_PATH
-    type: string
-    default: ${{ secrets.X86_SOURCE_PATH}}
-  - name: DESTINATION_PATH
-    type: string
-    default: ${{ secrets.DESTINATION_PATH_X86}}
-
-
 name: MSHV Cloudhypervisor Build
 on: workflow_dispatch
 concurrency:
@@ -99,13 +78,12 @@ jobs:
         run: |
 
           set -x
-          if [ ${{matrix.RUNNER}} == 'INTEL-RUNNER-1']; then
-            STORAGE_PATH: ${{ secrets.X86_SOURCE_PATH}}
-            DESTINATION_PATH: ${{ secrets.DESTINATION_PATH_X86}}
-            VHD_NAME: x86.vhd
-            IMAGE_NAME: vhd-image-aarch64
-            BLOB_SOURCE: https://aastsamplestorage.blob.core.windows.net/vhds/x86.vhd
-          elif [ ${{matrix.RUNNER}} == 'ARM-RUNNER-1']; then
+          STORAGE_PATH: ${{ secrets.X86_SOURCE_PATH}}
+          DESTINATION_PATH: ${{ secrets.DESTINATION_PATH_X86}}
+          VHD_NAME: x86.vhd
+          IMAGE_NAME: vhd-image-aarch64
+          BLOB_SOURCE: https://aastsamplestorage.blob.core.windows.net/vhds/x86.vhd
+          if [ ${{matrix.RUNNER}} == 'ARM-RUNNER-1']; then
             STORAGE_PATH: ${{ secrets.AARCH64_SOURCE_PATH}}
             DESTINATION_PATH: ${{ secrets.DESTINATION_PATH_AARCH64}}
             VHD_NAME: aarch64.vhd
