@@ -45,7 +45,11 @@ jobs:
         run: |
 
           set -x
+
+          # Login to Azure
           az login --identity --username ${{ secrets.CLIENT_ID }}
+
+          # Install AzCopy
           echo "Installing AzCopy"
           wget https://aka.ms/downloadazcopy-v10-linux
           tar -xvzf downloadazcopy-v10-linux
@@ -60,9 +64,12 @@ jobs:
           fi
             echo "AzCopy Succeeded: VHD upload complete"
 
+          # Create Blob URL for the VHD
           echo "Creating Blob URL"
           blob_url=$(az storage blob url --auth-mode login --container-name vhds --account-name aastsamplestorage --name x86.vhd --output tsv)
           echo $blob_url
+
+          # Create Image from the VHD
           echo "Creating Image"
           az image create --resource-group aasthagit --name vhd-image --source $blob_url --os-type Linux --location westus2 --hyper-v-generation V2
           echo "Image created"
@@ -71,7 +78,10 @@ jobs:
           
       - name: Create DOM0 VM 
         run: |
+
           set -x
+
+          # Create Dom0 VM
           echo "Creating VM"
           vm_creation=$(az vm create --resource-group aasthagit --name dom0_x86 --subnet ${{ secrets.SUBNET_ID }} --size Standard_d16s_v5 --location westus2 --image vhd-image --os-disk-size-gb 512 --public-ip-sku Standard --storage-sku Premium_LRS --admin-username ${{ secrets.ADMIN_USERNAME }} --admin-password ${{ secrets.ADMIN_PASSWORD }} --public-ip-address "")
           
@@ -92,6 +102,8 @@ jobs:
           fi
             echo "Successfully retrieved private IP address"
           echo $PRIVATE_IP
+
+          # SSH into the VM via sshpass
           echo "Installing sshpass"
           sudo apt install sshpass -y
           echo "Removing the old host key"
@@ -105,11 +117,14 @@ jobs:
             sudo tdnf install git moby-engine moby-cli build-essential m4 bison flex libuuid-devel qemu-img -y
             curl -sSf https://sh.rustup.rs | sh -s -- --default-toolchain stable --profile default -y
             export PATH="\$HOME/.cargo/bin:$PATH"
+
+            # Clone Cloud-Hypervisor repo
             git clone https://github.com/cloud-hypervisor/cloud-hypervisor.git
             if [ $? -ne 0 ]; then
               echo "Clone failed for cloud-hypervisor repo"
             fi
             cd cloud-hypervisor
+
             # Checkout the given commit of cloud-hypervisor repo and build
             git checkout ${{ github.sha }}
             if [ $? -ne 0 ]; then
@@ -121,3 +136,10 @@ jobs:
             echo "Building Cloud-Hypervisor"
             ${{matrix.BUILD_CMD}} --release
           EOF
+
+          - name: Delete Resource Group
+            run: |
+
+            # Cleanup & deletion of Resource Group
+            az group delete --name aasthagit --yes --no-wait
+            echo "Resource group deleted"
