@@ -1,3 +1,4 @@
+
 name: MSHV Cloudhypervisor Build
 on: workflow_dispatch
 concurrency:
@@ -13,15 +14,31 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-          RUNNER: 
-          - 'INTEL-RUNNER-1'
-        
-          BUILD_CMD: 
-          - 'cargo build'
-          - 'cargo build --no-default-features --features "mshv,kvm"'
-          - 'cargo build --no-default-features --features "mshv,kvm,sev_snp,igvm"'
-          - 'cargo build --package vhost_user_net'
-          - 'cargo build --package vhost_user_block'
+          x86_64 cargo build:
+          - RUNNER: 'INTEL-RUNNER-1'
+          - BUILD_CMD: 'cargo build'
+          x86_64 cargo build --no-default-features --features "mshv,kvm":
+          - RUNNER: 'INTEL-RUNNER-1'
+          - BUILD_CMD: 'cargo build --no-default-features --features "mshv,kvm"'
+          x86_64 cargo build --no-default-features --features "mshv,kvm,sev_snp,igvm":
+          - RUNNER: 'INTEL-RUNNER-1'
+          - BUILD_CMD: 'cargo build --no-default-features --features "mshv,kvm,sev_snp,igvm"'
+          x86_64 cargo build --package vhost_user_net:
+          - RUNNER: 'INTEL-RUNNER-1'
+          - BUILD_CMD: 'cargo build --package vhost_user_net'
+          x86_64 cargo build --package vhost_user_block:
+          - RUNNER: 'INTEL-RUNNER-1'
+          - BUILD_CMD: 'cargo build --package vhost_user_block'
+          aarch64 cargo build:
+          - RUNNER: 'ARM-RUNNER-1'
+          - BUILD_CMD: 'cargo build --all'
+          aarch64 cargo build --package vhost_user_net:
+          - RUNNER: 'ARM-RUNNER-1'
+          - BUILD_CMD: 'cargo build --all --package vhost_user_net'
+          aarch64 cargo build --package vhost_user_block:
+          - RUNNER: 'ARM-RUNNER-1'
+          - BUILD_CMD: 'cargo build --all --package vhost_user_block'
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -35,20 +52,47 @@ jobs:
       - name: Create Resource Group & Storage Account
         run: |
 
+          locations = ["westus2" "westus3" "westeurope"]
+          sku_to_check ="Standard_d16s_v5"
+
+          for location in "${locations[@]}"; do
+              echo "Checking $sku_to_check in $location..."
+              available_skus=$(az vm list-sizes --location $location --query "[].name" -o tsv)
+              
+              if echo "$available_skus" | grep -q "$sku_to_check"; then
+                  echo "$sku_to_check is available in $location"
+                  
+                  echo "Creating VM"
+                  
+              else
+                  echo "$sku_to_check is not available in $location"
+              fi
+
           az group create --name aasthagit --location westus2
           echo "Resource group created"
-
           az storage account create --name aastsamplestorage --resource-group aasthagit --location westus2 --sku Standard_LRS --allow-shared-key-access false
           echo "Storage account created"
 
       - name: Copy/Upload VHD to Azure Storage Account
         env: 
-          SOURCE_PATH_X86: ${{ secrets.X86_SOURCE_PATH}}
-          SOURCE_PATH_AARCH64: ${{ secrets.AARCH64_SOURCE_PATH}}
           STORAGE_ACCOUNT_PATH: ${{ secrets.MSHV_STORAGE_ACCOUNT_PATH }}
         run: |
 
           set -x
+          if [ ${{matrix.RUNNER}} == 'INTEL-RUNNER-1']; then
+            STORAGE_PATH: ${{ secrets.X86_SOURCE_PATH}}
+            DESTINATION_PATH: ${{ secrets.DESTINATION_PATH_X86}}
+            VHD_NAME: x86.vhd
+            IMAGE_NAME: vhd-image-aarch64
+            BLOB_SOURCE: https://aastsamplestorage.blob.core.windows.net/vhds/x86.vhd
+          elif [ ${{matrix.RUNNER}} == 'ARM-RUNNER-1']; then
+            STORAGE_PATH: ${{ secrets.AARCH64_SOURCE_PATH}}
+            DESTINATION_PATH: ${{ secrets.DESTINATION_PATH_AARCH64}}
+            VHD_NAME: aarch64.vhd
+            IMAGE_NAME: vhd-image-x86
+            BLOB_SOURCE: https://aastsamplestorage.blob.core.windows.net/vhds/aarch64.vhd
+          fi 
+
           az login --identity --username 7c8b017a-68e5-486e-81c1-9dc09edbc986
           echo "Installing AzCopy"
           wget https://aka.ms/downloadazcopy-v10-linux
@@ -56,7 +100,7 @@ jobs:
           export PATH=$PATH:$PWD/azcopy_linux_amd64_10.25.1
           
           azcopy login --identity
-          azcopy copy "${SOURCE_PATH_X86}" "${STORAGE_ACCOUNT_PATH}"
+          azcopy copy "${SOURCE_PATH}" "${DESTINATION_PATH}"
           
           if [ $? -ne 0 ]; then
             echo "AzCopy Failed: VHD upload failed"
@@ -65,11 +109,11 @@ jobs:
             echo "AzCopy Succeeded: VHD upload complete"
 
           echo "Creating Blob URL"
-          blob_url=$(az storage blob url --auth-mode login --container-name vhds --account-name aastsamplestorage --name x86.vhd --output tsv)
+          blob_url=$(az storage blob url --auth-mode login --container-name vhds --account-name aastsamplestorage --name ${{VHD_NAME}} --output tsv)
           echo $blob_url
 
           echo "Creating Image"
-          az image create --resource-group aasthagit --name vhd-image --source https://aastsamplestorage.blob.core.windows.net/vhds/x86.vhd --os-type Linux --location westus2 --hyper-v-generation V2
+          az image create --resource-group aasthagit --name ${{IMAGE_NAME}} --source ${{BLOB_SOURCE}} --os-type Linux --location westus2 --hyper-v-generation V2
           echo "Image created"
 
           az image wait --image-name vhd-image --resource-group aasthagit --exists
@@ -78,10 +122,14 @@ jobs:
       - name: Create DOM0 VM 
         run: |
 
+          if [ ${{matrix.RUNNER}} == 'INTEL-RUNNER-1']; then
+            DOM0_NAME: dom0_x86
+          elif [ ${{matrix.RUNNER}} == 'ARM-RUNNER-1']; then
+            DOM0_NAME: dom0_aarch64
+           
+          fi 
           set -x
-          echo "Creating VM"
-          vm_creation=$(az vm create --resource-group aasthagit --name dom0_x86 --subnet ${{ secrets.SUBNET_ID }} --size Standard_d16s_v5 --location westus2 --image vhd-image --os-disk-size-gb 512 --public-ip-sku Standard --storage-sku Premium_LRS --admin-username ${{ secrets.ADMIN_USERNAME }} --admin-password ${{ secrets.ADMIN_PASSWORD }} --public-ip-address "")
-          
+          vm_creation=$(az vm create --resource-group aasthagit --name ${{DOM0_NAME}} --subnet ${{ secrets.SUBNET_ID }} --size Standard_d16s_v5 --location westus2 --image vhd-image --os-disk-size-gb 512 --public-ip-sku Standard --storage-sku Premium_LRS --admin-username ${{ secrets.ADMIN_USERNAME }} --admin-password ${{ secrets.ADMIN_PASSWORD }} --public-ip-address "")
           if [ $? -ne 0 ]; then
             echo "VM Creation Failed"
             exit 1
@@ -92,7 +140,7 @@ jobs:
           echo "Retrieving VM Private IP address"
 
           # Get Private IP Address
-          PRIVATE_IP=$(az vm show -g aasthagit -n dom0_x86 -d --query privateIps -o tsv)
+          PRIVATE_IP=$(az vm show -g aasthagit -n ${{DOM0_NAME}} -d --query privateIps -o tsv)
 
           if [ $? -ne 0 ]; then
             echo "Failed to retrieve private IP address"
@@ -128,6 +176,11 @@ jobs:
             #if [ $? -ne 0 ]; then
             # echo "Checkout failed for: ${{ github.sha }}"
             # exit 1
-            # fi 
-            ${{matrix.BUILD_CMD}} --release
+            # fi
+            if [ ${{matrix.RUNNER}} == 'INTEL-RUNNER-1' ]; then
+              ${{matrix.BUILD_CMD_X86}} --release
+            elif [ ${{matrix.RUNNER}} == 'ARM-RUNNER-1' ]; then
+              ${{matrix.BUILD_CMD_AARCH64}} --release
+            fi
+
           EOF
