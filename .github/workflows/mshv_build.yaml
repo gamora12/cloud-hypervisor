@@ -97,7 +97,7 @@ jobs:
           echo "Removing the old host key"
           ssh-keygen -R $PRIVATE_IP
           echo "SSH into the VM"
-          sshpass -p "${{ secrets.DOM0_PASSWORD }}" ssh -o StrictHostKeyChecking=no "${{secrets.DOM0_PASSWORD}}"@$PRIVATE_IP << EOF
+          sshpass -p "${{ secrets.DOM0_PASSWORD }}" ssh -o StrictHostKeyChecking=no "${{secrets.DOM0_USERNAME}}"@$PRIVATE_IP << EOF
             set -x
             echo "Logged in"
 
