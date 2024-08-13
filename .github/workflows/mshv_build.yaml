@@ -136,10 +136,18 @@ jobs:
             # Build Cloud-Hypervisor
             echo "Building Cloud-Hypervisor"
             ${{matrix.BUILD_CMD}} --release
+
+            # Activate Docker
+            sudo systemctl start docker
+            sudo systemctl enable docker
+
+            sudo ./scripts/dev_cli.sh tests --hypervisor mshv --metrics
+
+
           EOF
 
-          - name: Delete Resource Group
-            run: |
+      - name: Delete Resource Group
+        run: |
 
             # Cleanup & deletion of Resource Group
             az group delete --name aasthagit --yes --no-wait
