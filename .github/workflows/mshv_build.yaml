@@ -1,3 +1,23 @@
+parameters:
+  - name: VHD_NAME
+    type: string
+    default: 'x86.vhd'
+  - name: IMAGE_NAME
+    type: string
+    default: 'vhd-image-x86'
+  - name: BLOB_SOURCE 
+    type: string
+    default: 'https://aastsamplestorage.blob.core.windows.net/vhds/x86.vhd'
+  - name: DOM0_NAME
+    type: string
+    default: 'dom0_x86'
+  - name: STORAGE_PATH
+    type: string
+    default: ${{ secrets.X86_SOURCE_PATH}}
+  - name: DESTINATION_PATH
+    type: string
+    default: ${{ secrets.DESTINATION_PATH_X86}}
+
 
 name: MSHV Cloudhypervisor Build
 on: workflow_dispatch
