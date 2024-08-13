@@ -43,7 +43,7 @@ jobs:
           STORAGE_ACCOUNT_PATH: ${{ secrets.MSHV_STORAGE_ACCOUNT_PATH }}
         run: |
           set -x
-          az login --identity --username 7c8b017a-68e5-486e-81c1-9dc09edbc986
+          az login --identity --username ${{ secrets.CLIENT_ID }}
           echo "Installing AzCopy"
           wget https://aka.ms/downloadazcopy-v10-linux
           tar -xvzf downloadazcopy-v10-linux
@@ -61,7 +61,7 @@ jobs:
           blob_url=$(az storage blob url --auth-mode login --container-name vhds --account-name aastsamplestorage --name x86.vhd --output tsv)
           echo $blob_url
           echo "Creating Image"
-          az image create --resource-group aasthagit --name vhd-image --source https://aastsamplestorage.blob.core.windows.net/vhds/x86.vhd --os-type Linux --location westus2 --hyper-v-generation V2
+          az image create --resource-group aasthagit --name vhd-image --source $blob_url --os-type Linux --location westus2 --hyper-v-generation V2
           echo "Image created"
           az image wait --image-name vhd-image --resource-group aasthagit --exists
           echo "Image is available"
