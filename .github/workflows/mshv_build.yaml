@@ -111,7 +111,7 @@ jobs:
           echo $blob_url
 
           echo "Creating Image"
-          az image create --resource-group aasthagit --name ${{IMAGE_NAME}} --source ${{BLOB_SOURCE}} --os-type Linux --location westus2 --hyper-v-generation V2
+          az image create --resource-group aasthagit --name $IMAGE_NAME --source $BLOB_SOURCE --os-type Linux --location westus2 --hyper-v-generation V2
           echo "Image created"
 
           az image wait --image-name vhd-image --resource-group aasthagit --exists
