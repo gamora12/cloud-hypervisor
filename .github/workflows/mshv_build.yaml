@@ -80,6 +80,7 @@ jobs:
           echo $vm_creation
           
           echo "Retrieving VM Private IP address"
+          
           # Get Private IP Address
           PRIVATE_IP=$(az vm show -g aasthagit -n dom0_x86 -d --query privateIps -o tsv)
           if [ $? -ne 0 ]; then
@@ -93,9 +94,10 @@ jobs:
           echo "Removing the old host key"
           ssh-keygen -R $PRIVATE_IP
           echo "SSH into the VM"
-          sshpass -p "${{ secrets.DOM0_PASSWORD }}" ssh -o StrictHostKeyChecking=no cloud@$PRIVATE_IP << EOF
+          sshpass -p "${{ secrets.DOM0_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{secrets.DOM0_PASSWORD}}@$PRIVATE_IP << EOF
             set -x
             echo "Logged in"
+
             # Install Dependencies
             sudo tdnf install git moby-engine moby-cli build-essential m4 bison flex libuuid-devel qemu-img -y
             curl -sSf https://sh.rustup.rs | sh -s -- --default-toolchain stable --profile default -y
@@ -106,10 +108,13 @@ jobs:
             fi
             cd cloud-hypervisor
             # Checkout the given commit of cloud-hypervisor repo and build
-            # git checkout ${{ github.sha }}
-            #if [ $? -ne 0 ]; then
-            # echo "Checkout failed for: ${{ github.sha }}"
-            # exit 1
-            # fi 
+            git checkout ${{ github.sha }}
+            if [ $? -ne 0 ]; then
+              echo "Checkout failed for: ${{ github.sha }}"
+              exit 1
+            fi 
+
+            # Build Cloud-Hypervisor
+            echo "Building Cloud-Hypervisor"
             ${{matrix.BUILD_CMD}} --release
           EOF
