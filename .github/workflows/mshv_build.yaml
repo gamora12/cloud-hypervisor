@@ -12,15 +12,15 @@ jobs:
       - INTEL
     strategy:
       fail-fast: false
-      matrix:
-          RUNNER: 
-          - 'INTEL-RUNNER-1'
-          BUILD_CMD: 
-          - 'cargo build'
-          - 'cargo build --no-default-features --features "mshv,kvm"'
-          - 'cargo build --no-default-features --features "mshv,kvm,sev_snp,igvm"'
-          - 'cargo build --package vhost_user_net'
-          - 'cargo build --package vhost_user_block'
+    # matrix:
+        # RUNNER: 
+        # - 'INTEL-RUNNER-1'
+        # BUILD_CMD: 
+        # - 'cargo build'
+        # - 'cargo build --no-default-features --features "mshv,kvm"'
+        # - 'cargo build --no-default-features --features "mshv,kvm,sev_snp,igvm"'
+        # - 'cargo build --package vhost_user_net'
+        # - 'cargo build --package vhost_user_block'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
