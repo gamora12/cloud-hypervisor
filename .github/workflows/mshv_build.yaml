@@ -132,6 +132,7 @@ jobs:
 
             # Clone Cloud-Hypervisor repo 
             REPO_URL="${{ github.server_url }}/${{ github.repository }}.git"
+            echo REPO_URL
             git clone $REPO_URL
             if [ $? -ne 0 ]; then
               echo "Clone failed for cloud-hypervisor repo"
