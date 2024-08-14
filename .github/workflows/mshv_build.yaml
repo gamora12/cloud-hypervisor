@@ -10,8 +10,8 @@ jobs:
     runs-on: 
       - self-hosted
       - INTEL
-    strategy:
-      fail-fast: false
+  # strategy:
+    # fail-fast: false
     # matrix:
         # RUNNER: 
         # - 'INTEL-RUNNER-1'
