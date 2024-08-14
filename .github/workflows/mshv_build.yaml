@@ -21,6 +21,17 @@ jobs:
         # - 'cargo build --no-default-features --features "mshv,kvm,sev_snp,igvm"'
         # - 'cargo build --package vhost_user_net'
         # - 'cargo build --package vhost_user_block'
+  # strategy:
+    # fail-fast: false
+    # matrix:
+        # RUNNER: 
+        # - 'INTEL-RUNNER-1'
+        # BUILD_CMD: 
+        # - 'cargo build'
+        # - 'cargo build --no-default-features --features "mshv,kvm"'
+        # - 'cargo build --no-default-features --features "mshv,kvm,sev_snp,igvm"'
+        # - 'cargo build --package vhost_user_net'
+        # - 'cargo build --package vhost_user_block'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -120,7 +131,7 @@ jobs:
             export PATH="\$HOME/.cargo/bin:$PATH"
 
             # Clone Cloud-Hypervisor repo 
-            REPO_URL="${{ github.server_url }}/${{ github.repository }}/.git"
+            REPO_URL="${{ github.server_url }}/${{ github.repository }}"
             git clone $REPO_URL
             if [ $? -ne 0 ]; then
               echo "Clone failed for cloud-hypervisor repo"
