@@ -21,17 +21,6 @@ jobs:
         # - 'cargo build --no-default-features --features "mshv,kvm,sev_snp,igvm"'
         # - 'cargo build --package vhost_user_net'
         # - 'cargo build --package vhost_user_block'
-  # strategy:
-    # fail-fast: false
-    # matrix:
-        # RUNNER: 
-        # - 'INTEL-RUNNER-1'
-        # BUILD_CMD: 
-        # - 'cargo build'
-        # - 'cargo build --no-default-features --features "mshv,kvm"'
-        # - 'cargo build --no-default-features --features "mshv,kvm,sev_snp,igvm"'
-        # - 'cargo build --package vhost_user_net'
-        # - 'cargo build --package vhost_user_block'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -163,5 +152,5 @@ jobs:
         run: |
 
             # Cleanup & deletion of Resource Group
-            az group delete --name aasthagit --yes --no-wait
-            echo "Resource group deleted"
+            # az group delete --name aasthagit --yes --no-wait
+            # echo "Resource group deleted"
