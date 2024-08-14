@@ -120,7 +120,8 @@ jobs:
             export PATH="\$HOME/.cargo/bin:$PATH"
 
             # Clone Cloud-Hypervisor repo 
-            git clone https://github.com/gamora12/cloud-hypervisor.git
+            REPO_URL="${{ github.server_url }}/${{ github.repository }}"
+            git clone $REPO_URL
             if [ $? -ne 0 ]; then
               echo "Clone failed for cloud-hypervisor repo"
             fi
@@ -135,12 +136,11 @@ jobs:
             
             sudo mkdir -p /etc/docker/
             sudo echo '{"default-ulimits":{"nofile":{"Hard":65535,"Name":"nofile","Soft":65535}}}' > /etc/docker/daemon.json
-            sudo groupadd -f docker
-            sudo usermod -a -G docker ${{secrets.DOM0_USERNAME}}
-            
             sudo systemctl enable docker.service
             sudo systemctl enable containerd.service
             sudo systemctl start docker
+            sudo groupadd -f docker
+            sudo usermod -a -G docker ${{secrets.DOM0_USERNAME}}
             export USE_MS_GUEST_KERNEL=YES
             export USE_MS_HV_FW=YES
             export USE_MS_OVMF_FW=YES
