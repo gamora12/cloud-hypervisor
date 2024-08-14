@@ -10,17 +10,17 @@ jobs:
     runs-on: 
       - self-hosted
       - INTEL
-    strategy:
-      fail-fast: false
-      matrix:
-          RUNNER: 
-          - 'INTEL-RUNNER-1'
-          BUILD_CMD: 
-          - 'cargo build'
-          - 'cargo build --no-default-features --features "mshv,kvm"'
-          - 'cargo build --no-default-features --features "mshv,kvm,sev_snp,igvm"'
-          - 'cargo build --package vhost_user_net'
-          - 'cargo build --package vhost_user_block'
+  # strategy:
+    # fail-fast: false
+    # matrix:
+        # RUNNER: 
+        # - 'INTEL-RUNNER-1'
+        # BUILD_CMD: 
+        # - 'cargo build'
+        # - 'cargo build --no-default-features --features "mshv,kvm"'
+        # - 'cargo build --no-default-features --features "mshv,kvm,sev_snp,igvm"'
+        # - 'cargo build --package vhost_user_net'
+        # - 'cargo build --package vhost_user_block'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -115,12 +115,13 @@ jobs:
             echo "Logged in"
 
             # Install Dependencies
-            sudo tdnf install git moby-engine moby-cli build-essential m4 bison flex libuuid-devel qemu-img -y
+            sudo tdnf install git moby-engine moby-cli dosfstools mtools build-essential m4 bison flex libuuid-devel qemu-img -y
             curl -sSf https://sh.rustup.rs | sh -s -- --default-toolchain stable --profile default -y
             export PATH="\$HOME/.cargo/bin:$PATH"
 
-            # Clone Cloud-Hypervisor repo
-            git clone https://github.com/cloud-hypervisor/cloud-hypervisor.git
+            # Clone Cloud-Hypervisor repo 
+            REPO_URL="${{ github.server_url }}/${{ github.repository }}"
+            git clone $REPO_URL
             if [ $? -ne 0 ]; then
               echo "Clone failed for cloud-hypervisor repo"
             fi
@@ -131,15 +132,18 @@ jobs:
             if [ $? -ne 0 ]; then
               echo "Checkout failed for: ${{ github.sha }}"
               exit 1
-            fi 
-
-            # Build Cloud-Hypervisor
-            echo "Building Cloud-Hypervisor"
-            ${{matrix.BUILD_CMD}} --release
-
-            # Activate Docker
+            fi
+            
+            sudo mkdir -p /etc/docker/
+            sudo echo '{"default-ulimits":{"nofile":{"Hard":65535,"Name":"nofile","Soft":65535}}}' > /etc/docker/daemon.json
+            sudo systemctl enable docker.service
+            sudo systemctl enable containerd.service
             sudo systemctl start docker
-            sudo systemctl enable docker
+            sudo groupadd -f docker
+            sudo usermod -a -G docker ${{secrets.DOM0_USERNAME}}
+            export USE_MS_GUEST_KERNEL=YES
+            export USE_MS_HV_FW=YES
+            export USE_MS_OVMF_FW=YES
 
             sudo ./scripts/dev_cli.sh tests --hypervisor mshv --integration
           EOF
