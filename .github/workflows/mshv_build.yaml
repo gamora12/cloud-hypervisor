@@ -133,10 +133,10 @@ jobs:
               exit 1
             fi
             
-            mkdir -p /etc/docker/
-            echo '{"default-ulimits":{"nofile":{"Hard":65535,"Name":"nofile","Soft":65535}}}' > /etc/docker/daemon.json
-            groupadd -f docker
-            usermod -a -G docker `whoami`
+            sudo mkdir -p /etc/docker/
+            sudo echo '{"default-ulimits":{"nofile":{"Hard":65535,"Name":"nofile","Soft":65535}}}' > /etc/docker/daemon.json
+            sudo groupadd -f docker
+            sudo usermod -a -G docker `whoami`
             
             sudo systemctl enable docker.service
             sudo systemctl enable containerd.service
@@ -145,7 +145,7 @@ jobs:
             export USE_MS_HV_FW=YES
             export USE_MS_OVMF_FW=YES
 
-            ./scripts/dev_cli.sh tests --hypervisor mshv --integration
+            sudo ./scripts/dev_cli.sh tests --hypervisor mshv --integration
           EOF
 
       - name: Delete Resource Group
