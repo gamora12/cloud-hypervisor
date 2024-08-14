@@ -119,8 +119,8 @@ jobs:
             curl -sSf https://sh.rustup.rs | sh -s -- --default-toolchain stable --profile default -y
             export PATH="\$HOME/.cargo/bin:$PATH"
 
-            # Clone Cloud-Hypervisor repo
-            git clone https://github.com/cloud-hypervisor/cloud-hypervisor.git
+            # Clone Cloud-Hypervisor repo 
+            git clone https://github.com/gamora12/cloud-hypervisor.git
             if [ $? -ne 0 ]; then
               echo "Clone failed for cloud-hypervisor repo"
             fi
@@ -136,7 +136,7 @@ jobs:
             sudo mkdir -p /etc/docker/
             sudo echo '{"default-ulimits":{"nofile":{"Hard":65535,"Name":"nofile","Soft":65535}}}' > /etc/docker/daemon.json
             sudo groupadd -f docker
-            sudo usermod -a -G docker `whoami`
+            sudo usermod -a -G docker ${{secrets.DOM0_USERNAME}}
             
             sudo systemctl enable docker.service
             sudo systemctl enable containerd.service
