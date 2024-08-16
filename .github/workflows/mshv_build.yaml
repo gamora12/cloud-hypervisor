@@ -127,6 +127,7 @@ jobs:
             fi
             cd cloud-hypervisor
 
+            git fetch origin
             # Checkout the given commit of cloud-hypervisor repo and build
             git checkout ${{ github.sha }}
             if [ $? -ne 0 ]; then
