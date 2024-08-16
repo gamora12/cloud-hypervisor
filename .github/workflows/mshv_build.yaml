@@ -125,7 +125,7 @@ jobs:
             if [ $? -ne 0 ]; then
               echo "Clone failed for cloud-hypervisor repo"
             fi
-            cd newsync
+            cd cloud-hypervisor
 
             #git fetch origin
             # Checkout the given commit of cloud-hypervisor repo and build
