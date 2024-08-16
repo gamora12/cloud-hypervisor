@@ -121,28 +121,28 @@ jobs:
 
             # Clone Cloud-Hypervisor repo 
           
-            git clone https://github.com/gamora12/cloud-hypervisor.git
+            # git clone https://github.com/gamora12/cloud-hypervisor.git
             if [ $? -ne 0 ]; then
               echo "Clone failed for cloud-hypervisor repo"
             fi
-            cd cloud-hypervisor
+            cd newsync
 
             git fetch origin
             # Checkout the given commit of cloud-hypervisor repo and build
-            git checkout ${{ github.sha }}
-            if [ $? -ne 0 ]; then
-              echo "Checkout failed for: ${{ github.sha }}"
-              exit 1
-            fi
+            #git checkout ${{ github.sha }}
+            #if [ $? -ne 0 ]; then
+            #  echo "Checkout failed for: ${{ github.sha }}"
+            #  exit 1
+            #fi
             
             # Build Cloud-Hypervisor
             # echo "Building Cloud-Hypervisor"
             # ${{matrix.BUILD_CMD}} --release
            
             sudo mkdir -p /etc/docker/
-            # Redirect the output to a temporary file and then move it:
-            echo '{"default-ulimits":{"nofile":{"Hard":65535,"Name":"nofile","Soft":65535}}}' > /tmp/daemon.json
-            sudo mv /tmp/daemon.json /etc/docker/daemon.json
+            
+
+            echo '{"default-ulimits":{"nofile":{"Hard":65535,"Name":"nofile","Soft":65535}}}' | sudo tee /etc/docker/daemon.json
 
             sudo systemctl enable docker.service
             sudo systemctl enable containerd.service
