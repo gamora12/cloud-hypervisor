@@ -154,7 +154,7 @@ jobs:
             export USE_MS_HV_FW=YES
             export USE_MS_OVMF_FW=YES
 
-            sudo ./scripts/dev_cli.sh 
+            sudo ./scripts/dev_cli.sh tests --hypervisor mshv --integration
           EOF
 
       - name: Delete Resource Group

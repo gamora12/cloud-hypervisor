@@ -3,7 +3,8 @@
 # Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # Copyright © 2020 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-echo "Value of USE_MS_GUEST_KERNEL: $USE_MS_GUEST_KERNEL"
+echo "Value of USE_MS_GUEST_KERNEL: ${USE_MS_GUEST_KERNEL}"
+exit 1
 CLI_NAME="Cloud Hypervisor"
 
 CTR_IMAGE_TAG="ghcr.io/cloud-hypervisor/cloud-hypervisor"
