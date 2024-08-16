@@ -150,11 +150,8 @@ jobs:
             sudo usermod -a -G docker ${{secrets.DOM0_USERNAME}}
 
             # Use the MS Guest Kernel, MS HV Firmware, and MS OVMF Firmware
-            export USE_MS_GUEST_KERNEL=YES
-            export USE_MS_HV_FW=YES
-            export USE_MS_OVMF_FW=YES
 
-            sudo USE_MS_GUEST_KERNEL=YES ./scripts/dev_cli.sh tests --hypervisor mshv --integration
+            sudo USE_MS_GUEST_KERNEL=YES USE_MS_HV_FW=YES USE_MS_OVMF_FW=YES ./scripts/dev_cli.sh tests --hypervisor mshv --integration
           EOF
 
       - name: Delete Resource Group
