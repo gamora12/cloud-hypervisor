@@ -135,7 +135,10 @@ jobs:
             fi
             
             sudo mkdir -p /etc/docker/
-            sudo echo '{"default-ulimits":{"nofile":{"Hard":65535,"Name":"nofile","Soft":65535}}}' > /etc/docker/daemon.json
+            # Redirect the output to a temporary file and then move it:
+            echo '{"default-ulimits":{"nofile":{"Hard":65535,"Name":"nofile","Soft":65535}}}' > /tmp/daemon.json
+            sudo mv /tmp/daemon.json /etc/docker/daemon.json
+
             sudo systemctl enable docker.service
             sudo systemctl enable containerd.service
             sudo systemctl start docker
