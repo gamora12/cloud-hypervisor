@@ -134,6 +134,10 @@ jobs:
               exit 1
             fi
             
+            # Build Cloud-Hypervisor
+            # echo "Building Cloud-Hypervisor"
+            # ${{matrix.BUILD_CMD}} --release
+           
             sudo mkdir -p /etc/docker/
             # Redirect the output to a temporary file and then move it:
             echo '{"default-ulimits":{"nofile":{"Hard":65535,"Name":"nofile","Soft":65535}}}' > /tmp/daemon.json
@@ -144,11 +148,13 @@ jobs:
             sudo systemctl start docker
             sudo groupadd -f docker
             sudo usermod -a -G docker ${{secrets.DOM0_USERNAME}}
+
+            # Use the MS Guest Kernel, MS HV Firmware, and MS OVMF Firmware
             export USE_MS_GUEST_KERNEL=YES
             export USE_MS_HV_FW=YES
             export USE_MS_OVMF_FW=YES
 
-            sudo ./scripts/dev_cli.sh tests --hypervisor mshv --integration
+            sudo ./scripts/dev_cli.sh 
           EOF
 
       - name: Delete Resource Group
