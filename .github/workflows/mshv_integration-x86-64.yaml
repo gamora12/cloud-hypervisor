@@ -1,0 +1,28 @@
+name: Cloud Hypervisor Tests (x86-64)
+on: [pull_request, workflow_dispatch]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    timeout-minutes: 60
+    name: Tests (x86-64)
+    runs-on: 
+    - self-hosted
+    - INTEL
+    steps:
+      - uses: ./.github/workflows/mshv_build.yaml 
+      - name: Run unit tests
+        run: scripts/dev_cli.sh tests --unit 
+     
+      - name: Run integration tests
+        timeout-minutes: 40
+        run: scripts/dev_cli.sh tests --integration 
+
+      - name: Run live-migration integration tests
+        timeout-minutes: 20
+        run: scripts/dev_cli.sh tests --integration-live-migration 
+
+      - name: Skipping build for PR
+        run: echo "Skipping build for PR"
