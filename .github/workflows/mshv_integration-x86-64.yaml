@@ -1,4 +1,4 @@
-name: Cloud Hypervisor Tests (x86-64)
+name: MSHV Tests (x86-64)
 on: workflow_dispatch
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
