@@ -12,7 +12,7 @@ jobs:
     - self-hosted
     - INTEL
     steps:
-      - uses: ./.github/workflows/mshv_build.yaml 
+      - uses: .github/workflows/mshv_build.yaml 
       - name: Run unit tests
         run: scripts/dev_cli.sh tests --unit 
      
