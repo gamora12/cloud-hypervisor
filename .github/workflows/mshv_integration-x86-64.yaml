@@ -1,5 +1,5 @@
 name: Cloud Hypervisor Tests (x86-64)
-on: [pull_request, workflow_dispatch]
+on: workflow_dispatch
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
