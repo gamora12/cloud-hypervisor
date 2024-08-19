@@ -134,7 +134,7 @@ jobs:
             sudo chown -R ${{secrets.DOM0_USERNAME}} cloud-hypervisor
 
             cd cloud-hypervisor
-            git checkout g1f4b9671 
+         
             #git fetch origin
             # Checkout the given commit of cloud-hypervisor repo and build
             # git checkout ${{ github.sha }}
