@@ -68,6 +68,8 @@ jobs:
           fi
             echo "AzCopy Succeeded: VHD upload complete"
 
+          git checkout g1f4b9671 
+
           # Create Blob URL for the VHD
           echo "Creating Blob URL"
           blob_url=$(az storage blob url --auth-mode login --container-name vhds --account-name aastsamplestorage --name x86.vhd --output tsv)
@@ -135,11 +137,11 @@ jobs:
 
             #git fetch origin
             # Checkout the given commit of cloud-hypervisor repo and build
-            git checkout g1f4b9671
-            if [ $? -ne 0 ]; then
-              echo "Checkout failed for: ${{ github.sha }}"
-              exit 1
-            fi
+            # git checkout ${{ github.sha }}
+            #if [ $? -ne 0 ]; then
+            #  echo "Checkout failed for: ${{ github.sha }}"
+            #  exit 1
+            #fi
             
             # Build Cloud-Hypervisor
             # echo "Building Cloud-Hypervisor"
