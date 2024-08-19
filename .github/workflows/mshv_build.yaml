@@ -122,9 +122,9 @@ jobs:
             # Clone Cloud-Hypervisor repo 
           
             # git clone https://github.com/gamora12/cloud-hypervisor.git
-            if [ $? -ne 0 ]; then
-              echo "Clone failed for cloud-hypervisor repo"
-            fi
+            #if [ $? -ne 0 ]; then
+            #  echo "Clone failed for cloud-hypervisor repo"
+            #fi
             cd cloud-hypervisor
 
             #git fetch origin

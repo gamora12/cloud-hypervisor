@@ -5,14 +5,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  main:
+    
     timeout-minutes: 60
     name: Tests (x86-64)
     runs-on: 
     - self-hosted
     - INTEL
+    
     steps:
-      - uses: .github/workflows/mshv_build.yaml 
+      - uses: gamora12/cloud-hypervisor/.github/workflows/mshv_build.yaml
       - name: Run unit tests
         run: scripts/dev_cli.sh tests --unit 
      
