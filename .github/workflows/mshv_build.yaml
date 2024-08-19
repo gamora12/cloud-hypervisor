@@ -135,7 +135,7 @@ jobs:
 
             #git fetch origin
             # Checkout the given commit of cloud-hypervisor repo and build
-            git checkout 8b9da4e2861aba7499764a8002ae45d582f7848b
+            git checkout g1f4b9671
             if [ $? -ne 0 ]; then
               echo "Checkout failed for: ${{ github.sha }}"
               exit 1
