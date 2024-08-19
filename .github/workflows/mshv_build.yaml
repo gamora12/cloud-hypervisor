@@ -68,7 +68,7 @@ jobs:
           fi
             echo "AzCopy Succeeded: VHD upload complete"
 
-          git checkout g1f4b9671 
+          
 
           # Create Blob URL for the VHD
           echo "Creating Blob URL"
@@ -134,7 +134,7 @@ jobs:
             sudo chown -R ${{secrets.DOM0_USERNAME}} cloud-hypervisor
 
             cd cloud-hypervisor
-
+            git checkout g1f4b9671 
             #git fetch origin
             # Checkout the given commit of cloud-hypervisor repo and build
             # git checkout ${{ github.sha }}
