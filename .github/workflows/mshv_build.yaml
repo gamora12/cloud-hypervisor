@@ -130,15 +130,16 @@ jobs:
             #fi
 
             sudo chown -R ${{secrets.DOM0_USERNAME}} cloud-hypervisor
+
             cd cloud-hypervisor
 
             #git fetch origin
             # Checkout the given commit of cloud-hypervisor repo and build
-            #git checkout ${{ github.sha }}
-            #if [ $? -ne 0 ]; then
-            #  echo "Checkout failed for: ${{ github.sha }}"
-            #  exit 1
-            #fi
+            git checkout 8b9da4e2861aba7499764a8002ae45d582f7848b
+            if [ $? -ne 0 ]; then
+              echo "Checkout failed for: ${{ github.sha }}"
+              exit 1
+            fi
             
             # Build Cloud-Hypervisor
             # echo "Building Cloud-Hypervisor"
