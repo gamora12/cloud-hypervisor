@@ -1,5 +1,8 @@
 name: MSHV Cloudhypervisor Build
-on: workflow_dispatch
+on: 
+  - workflow_dispatch
+  - workflow_call
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -125,6 +128,8 @@ jobs:
             #if [ $? -ne 0 ]; then
             #  echo "Clone failed for cloud-hypervisor repo"
             #fi
+
+            sudo chown -R ${{secrets.DOM0_USERNAME}} cloud-hypervisor
             cd cloud-hypervisor
 
             #git fetch origin
