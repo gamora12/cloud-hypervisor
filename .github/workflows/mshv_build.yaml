@@ -1,8 +1,6 @@
 name: MSHV Cloudhypervisor Build
 on: 
-  - workflow_dispatch
-  - workflow_call
-
+  workflow_call:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -68,8 +66,6 @@ jobs:
           fi
             echo "AzCopy Succeeded: VHD upload complete"
 
-          
-
           # Create Blob URL for the VHD
           echo "Creating Blob URL"
           blob_url=$(az storage blob url --auth-mode login --container-name vhds --account-name aastsamplestorage --name x86.vhd --output tsv)
@@ -132,7 +128,6 @@ jobs:
             #fi
 
             sudo chown -R ${{secrets.DOM0_USERNAME}} cloud-hypervisor
-
             cd cloud-hypervisor
          
             #git fetch origin
