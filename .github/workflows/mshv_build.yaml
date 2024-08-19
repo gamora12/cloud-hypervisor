@@ -152,7 +152,7 @@ jobs:
             sudo systemctl start docker
             sudo groupadd -f docker
             sudo usermod -a -G docker ${{secrets.DOM0_USERNAME}}
-            systemctl restart docker
+            sudo systemctl restart docker
 
             # Use the MS Guest Kernel, MS HV Firmware, and MS OVMF Firmware
 
