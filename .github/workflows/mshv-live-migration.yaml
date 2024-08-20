@@ -13,12 +13,13 @@ jobs:
       SUBNET_ID: ${{ secrets.SUBNET_ID }}
       ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
       ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-      
+
   run_tests:
     name: Live-Migration Tests (x86-64)
     runs-on:
       - self-hosted
       - INTEL
+    needs: infrasetup
     steps:
 
       - name: Az Login
