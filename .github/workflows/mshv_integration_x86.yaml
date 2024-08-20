@@ -36,4 +36,12 @@ jobs:
             cd cloud-hypervisor
 
             # Run integration tests
-            scripts/dev_cli.sh tests --hypervisor mshv --integration
+            sudo USE_MS_GUEST_KERNEL=YES USE_MS_HV_FW=YES USE_MS_OVMF_FW=YES ./scripts/dev_cli.sh tests --hypervisor mshv --integration
+          EOF
+
+      - name: Delete Resource Group
+        run: |
+
+          # Cleanup & deletion of Resource Group
+          # az group delete --name aasthagit --yes --no-wait
+          # echo "Resource group deleted"
