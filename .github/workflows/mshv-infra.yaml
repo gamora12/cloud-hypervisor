@@ -8,6 +8,14 @@ on:
         required: true
       DOM0_PASSWORD:
         required: true
+      X86_SOURCE_PATH:
+        required: true
+      MSHV_STORAGE_ACCOUNT_PATH:
+        required: true
+      SUBNET_ID:
+        required: true
+      
+      
     
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
