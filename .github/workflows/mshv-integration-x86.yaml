@@ -1,0 +1,54 @@
+name: MSHV Integration Tests (x86-64)
+on: 
+  workflow_dispatch:
+jobs:
+  infrasetup:
+    uses: ./.github/workflows/mshv-infra.yaml
+    secrets:
+      CLIENT_ID: ${{ secrets.CLIENT_ID }}
+      DOM0_USERNAME: ${{ secrets.DOM0_USERNAME }}
+      DOM0_PASSWORD: ${{ secrets.DOM0_PASSWORD }}
+    
+  run_tests:
+    name: Integration Tests (x86-64)
+    runs-on:
+      - self-hosted
+      - INTEL
+    steps:
+
+      - name: Az Login
+        run: az login --identity --username ${{ secrets.CLIENT_ID }}
+     
+      - name: Run integration tests
+        run: |
+
+          set -x
+          echo "Retrieving VM Private IP address"
+
+          # Get Private IP Address
+          PRIVATE_IP=$(az vm show -g aasthagit -n dom0_x86 -d --query privateIps -o tsv)
+          if [ $? -ne 0 ]; then
+           echo "Failed to retrieve private IP address"
+           exit 1
+          fi
+          echo "Successfully retrieved private IP address"
+          echo $PRIVATE_IP
+          sshpass -p "${{ secrets.DOM0_PASSWORD }}" ssh -o StrictHostKeyChecking=no "${{secrets.DOM0_USERNAME}}"@$PRIVATE_IP << EOF
+            set -x
+            echo "Logged in"
+
+            sudo chown -R ${{secrets.DOM0_USERNAME}} cloud-hypervisor
+            cd cloud-hypervisor
+
+            # Run integration tests
+            # Use the MS Guest Kernel, MS HV Firmware, and MS OVMF Firmware
+
+            sudo USE_MS_GUEST_KERNEL=YES USE_MS_HV_FW=YES USE_MS_OVMF_FW=YES ./scripts/dev_cli.sh tests --hypervisor mshv --integration
+          EOF
+
+      - name: Delete Resource Group
+        run: |
+
+          # Cleanup & deletion of Resource Group
+          # az group delete --name aasthagit --yes --no-wait
+          # echo "Resource group deleted"
