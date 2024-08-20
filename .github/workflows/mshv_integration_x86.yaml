@@ -1,0 +1,43 @@
+name: MSHV Tests (x86-64)
+on: 
+  workflow_dispatch:
+jobs:
+  infra_setup:
+    uses: ./.github/workflows/mshv_build.yaml
+    
+  run_tests:
+    name: Tests (x86-64)
+    runs-on:
+      - self-hosted
+      - INTEL
+    steps:
+
+      - name: AZ Login
+        run: az login --identity --username ${{ secrets.CLIENT_ID }}
+
+      - name: Log in to Dom0
+        run: echo "Hi"
+
+        # set -x
+        # echo "Retrieving VM Private IP address"
+
+        # Get Private IP Address
+        #=$(az vm show -g aasthagit -n dom0_x86 -d --query privateIps -o tsv)
+        #if [ $? -ne 0 ]; then
+        #  echo "Failed to retrieve private IP address"
+        #  exit 1
+        #fi
+        #echo "Successfully retrieved private IP address"
+        # echo $PRIVATE_IP
+        # sshpass -p "${{ secrets.DOM0_PASSWORD }}" ssh -o StrictHostKeyChecking=no "${{secrets.DOM0_USERNAME}}"@$PRIVATE_IP << EOF
+          # set -x
+          # echo "Logged in"
+
+          # cd cloud-hypervisor
+
+          # Run integration tests
+          # scripts/dev_cli.sh tests --hypervisor mshv --integration
+     
+  
+
+   
