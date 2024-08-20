@@ -1,4 +1,4 @@
-name: MSHV Cloudhypervisor Infra Setup
+name: MSHV Infra Setup
 on: 
   workflow_call:
     secrets:
