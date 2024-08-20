@@ -4,6 +4,10 @@ on:
     secrets:
       CLIENT_ID:
         required: true
+      DOM0_USERNAME:
+        required: true
+      DOM0_PASSWORD:
+        required: true
     
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
