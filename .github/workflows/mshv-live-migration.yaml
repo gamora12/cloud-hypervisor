@@ -8,7 +8,10 @@ jobs:
       CLIENT_ID: ${{ secrets.CLIENT_ID }}
       DOM0_USERNAME: ${{ secrets.DOM0_USERNAME }}
       DOM0_PASSWORD: ${{ secrets.DOM0_PASSWORD }}
-    
+      X86_SOURCE_PATH: ${{ secrets.X86_SOURCE_PATH }}
+      MSHV_STORAGE_ACCOUNT_PATH: ${{ secrets.MSHV_STORAGE_ACCOUNT_PATH }}
+      SUBNET_ID: ${{ secrets.SUBNET_ID }}
+      
   run_tests:
     name: Live-Migration Tests (x86-64)
     runs-on:
