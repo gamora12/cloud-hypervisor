@@ -13,7 +13,7 @@ jobs:
       SUBNET_ID: ${{ secrets.SUBNET_ID }}
       ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
       ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-      
+
   run_tests:
     name: Performance Metrics Tests (x86-64)
     runs-on:
@@ -47,7 +47,7 @@ jobs:
 
             # Use the MS Guest Kernel, MS HV Firmware, and MS OVMF Firmware
 
-            sudo USE_MS_GUEST_KERNEL=YES USE_MS_HV_FW=YES USE_MS_OVMF_FW=YES ./scripts/dev_cli.sh tests --hypervisor mshv ---metrics
+            sudo USE_MS_GUEST_KERNEL=YES USE_MS_HV_FW=YES USE_MS_OVMF_FW=YES ./scripts/dev_cli.sh tests --hypervisor mshv --metrics
           EOF
 
       - name: Delete Resource Group
