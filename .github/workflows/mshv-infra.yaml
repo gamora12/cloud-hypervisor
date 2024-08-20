@@ -147,7 +147,7 @@ jobs:
             #  echo "Checkout failed for: ${{ github.sha }}"
             #  exit 1
             #fi
-           
+            cargo build --release
             sudo mkdir -p /etc/docker/
             echo '{"default-ulimits":{"nofile":{"Hard":65535,"Name":"nofile","Soft":65535}}}' | sudo tee /etc/docker/daemon.json
             sudo systemctl enable docker.service
