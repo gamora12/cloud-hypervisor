@@ -1,0 +1,64 @@
+name: MSHV Build
+on: 
+  workflow_dispatch:
+jobs:
+  infrasetup:
+    uses: ./.github/workflows/mshv-infra.yaml
+    secrets:
+      CLIENT_ID: ${{ secrets.CLIENT_ID }}
+      DOM0_USERNAME: ${{ secrets.DOM0_USERNAME }}
+      DOM0_PASSWORD: ${{ secrets.DOM0_PASSWORD }}
+    
+  build:
+    name: Build
+    runs-on:
+      - self-hosted
+      - INTEL
+    strategy:
+      fail-fast: false
+      matrix:
+        RUNNER: 
+         - 'INTEL-RUNNER-1'
+        BUILD_CMD: 
+         - 'cargo build'
+         - 'cargo build --no-default-features --features "mshv,kvm"'
+         - 'cargo build --no-default-features --features "mshv,kvm,sev_snp,igvm"'
+         - 'cargo build --package vhost_user_net'
+         - 'cargo build --package vhost_user_block'
+    steps:
+
+      - name: Az Login
+        run: az login --identity --username ${{ secrets.CLIENT_ID }}
+     
+      - name: Build MSHV
+        run: |
+
+          set -x
+          echo "Retrieving VM Private IP address"
+
+          # Get Private IP Address
+          PRIVATE_IP=$(az vm show -g aasthagit -n dom0_x86 -d --query privateIps -o tsv)
+          if [ $? -ne 0 ]; then
+           echo "Failed to retrieve private IP address"
+           exit 1
+          fi
+          echo "Successfully retrieved private IP address"
+          echo $PRIVATE_IP
+          sshpass -p "${{ secrets.DOM0_PASSWORD }}" ssh -o StrictHostKeyChecking=no "${{secrets.DOM0_USERNAME}}"@$PRIVATE_IP << EOF
+            set -x
+            echo "Logged in"
+
+            sudo chown -R ${{secrets.DOM0_USERNAME}} cloud-hypervisor
+            cd cloud-hypervisor
+
+            # Build Cloud-Hypervisor
+            echo "Building Cloud-Hypervisor"
+            ${{matrix.BUILD_CMD}} --release
+          EOF
+
+      - name: Delete Resource Group
+        run: |
+
+          # Cleanup & deletion of Resource Group
+          # az group delete --name aasthagit --yes --no-wait
+          # echo "Resource group deleted"

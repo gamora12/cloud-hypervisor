@@ -19,17 +19,7 @@ jobs:
     runs-on: 
       - self-hosted
       - INTEL
-  # strategy:
-    # fail-fast: false
-    # matrix:
-        # RUNNER: 
-        # - 'INTEL-RUNNER-1'
-        # BUILD_CMD: 
-        # - 'cargo build'
-        # - 'cargo build --no-default-features --features "mshv,kvm"'
-        # - 'cargo build --no-default-features --features "mshv,kvm,sev_snp,igvm"'
-        # - 'cargo build --package vhost_user_net'
-        # - 'cargo build --package vhost_user_block'
+  
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -145,16 +135,9 @@ jobs:
             #  echo "Checkout failed for: ${{ github.sha }}"
             #  exit 1
             #fi
-            
-            # Build Cloud-Hypervisor
-            # echo "Building Cloud-Hypervisor"
-            # ${{matrix.BUILD_CMD}} --release
            
             sudo mkdir -p /etc/docker/
-            
-
             echo '{"default-ulimits":{"nofile":{"Hard":65535,"Name":"nofile","Soft":65535}}}' | sudo tee /etc/docker/daemon.json
-
             sudo systemctl enable docker.service
             sudo systemctl enable containerd.service
             sudo systemctl start docker
