@@ -19,7 +19,7 @@ jobs:
       - name: AZ Login
         run: az login --identity --username ${{ secrets.CLIENT_ID }}
      
-      - name: DOM0 Login
+      - name: Run integration tests
         run: |
 
           set -x
@@ -37,6 +37,7 @@ jobs:
             set -x
             echo "Logged in"
 
+            sudo chown -R ${{secrets.DOM0_USERNAME}} cloud-hypervisor
             cd cloud-hypervisor
 
             # Run integration tests
