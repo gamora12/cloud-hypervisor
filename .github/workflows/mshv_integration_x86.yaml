@@ -4,6 +4,10 @@ on:
 jobs:
   infra_setup:
     uses: ./.github/workflows/mshv_build.yaml
+    secrets:
+      CLIENT_ID: ${{ secrets.CLIENT_ID }}
+      DOM0_USERNAME: ${{ secrets.DOM0_USERNAME }}
+      DOM0_PASSWORD: ${{ secrets.DOM0_PASSWORD }}
     
   run_tests:
     name: Tests (x86-64)

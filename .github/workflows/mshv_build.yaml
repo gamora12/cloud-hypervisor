@@ -1,6 +1,11 @@
 name: MSHV Cloudhypervisor Build
 on: 
   workflow_call:
+    secrets:
+      CLIENT_ID: ${{ secrets.CLIENT_ID }}
+      DOM0_USERNAME: ${{ secrets.DOM0_USERNAME }}
+      DOM0_PASSWORD: ${{ secrets.DOM0_PASSWORD }}
+    
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
