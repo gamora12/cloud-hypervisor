@@ -4,6 +4,9 @@ on:
 jobs:
   infrasetup:
     uses: ./.github/workflows/mshv-infra.yaml
+    with:
+      RG_NAME: "LiveMigration"
+      DOM0_SKU: "Standard_D64s_v4"
     secrets:
       CLIENT_ID: ${{ secrets.CLIENT_ID }}
       DOM0_USERNAME: ${{ secrets.DOM0_USERNAME }}

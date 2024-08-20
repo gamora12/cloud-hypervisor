@@ -2,6 +2,10 @@ name: MSHV Infra Setup
 on: 
   workflow_call:
     inputs:
+      RG_NAME:
+        description: 'Resource Group Name'
+        required: true
+        type: string
       DOM0_SKU: 
         description: 'Dom0 VM SKU'
         required: true
@@ -48,9 +52,9 @@ jobs:
       - name: Create Resource Group & Storage Account
         run: |
 
-          az group create --name aasthagit --location westus2
+          az group create --name ${{ inputs.RG_NAME }} --location westus2
           echo "Resource group created"
-          az storage account create --name aastsamplestorage --resource-group aasthagit --location westus2 --sku Standard_LRS --allow-shared-key-access false
+          az storage account create --name aastsamplestorage --resource-group ${{ inputs.RG_NAME }} --location westus2 --sku Standard_LRS --allow-shared-key-access false
           echo "Storage account created"
       - name: Copy/Upload VHD to Azure Storage Account
         env: 
@@ -85,9 +89,9 @@ jobs:
 
           # Create Image from the VHD
           echo "Creating Image"
-          az image create --resource-group aasthagit --name vhd-image --source $blob_url --os-type Linux --location westus2 --hyper-v-generation V2
+          az image create --resource-group ${{ inputs.RG_NAME }} --name vhd-image --source $blob_url --os-type Linux --location westus2 --hyper-v-generation V2
           echo "Image created"
-          az image wait --image-name vhd-image --resource-group aasthagit --exists
+          az image wait --image-name vhd-image --resource-group ${{ inputs.RG_NAME }} --exists
           echo "Image is available"
           
       - name: Create DOM0 VM 
@@ -97,7 +101,7 @@ jobs:
 
           # Create Dom0 VM
           echo "Creating VM"
-          vm_creation=$(az vm create --resource-group aasthagit --name dom0_x86 --subnet ${{ secrets.SUBNET_ID }} --size ${{ inputs.DOM0_SKU }} --location westus2 --image vhd-image --os-disk-size-gb 512 --public-ip-sku Standard --storage-sku Premium_LRS --admin-username ${{ secrets.ADMIN_USERNAME }} --admin-password ${{ secrets.ADMIN_PASSWORD }} --public-ip-address "")
+          vm_creation=$(az vm create --resource-group ${{ inputs.RG_NAME }} --name dom0_x86 --subnet ${{ secrets.SUBNET_ID }} --size ${{ inputs.DOM0_SKU }} --location westus2 --image vhd-image --os-disk-size-gb 512 --public-ip-sku Standard --storage-sku Premium_LRS --admin-username ${{ secrets.ADMIN_USERNAME }} --admin-password ${{ secrets.ADMIN_PASSWORD }} --public-ip-address "")
           
           if [ $? -ne 0 ]; then
             echo "VM Creation Failed"
@@ -109,7 +113,7 @@ jobs:
           echo "Retrieving VM Private IP address"
           
           # Get Private IP Address
-          PRIVATE_IP=$(az vm show -g aasthagit -n dom0_x86 -d --query privateIps -o tsv)
+          PRIVATE_IP=$(az vm show -g ${{ inputs.RG_NAME }} -n dom0_x86 -d --query privateIps -o tsv)
           if [ $? -ne 0 ]; then
             echo "Failed to retrieve private IP address"
             exit 1
