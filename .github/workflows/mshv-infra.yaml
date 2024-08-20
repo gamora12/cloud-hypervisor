@@ -129,7 +129,7 @@ jobs:
             sudo tdnf install git moby-engine moby-cli dosfstools mtools build-essential m4 bison flex libuuid-devel qemu-img -y
             curl -sSf https://sh.rustup.rs | sh -s -- --default-toolchain stable --profile default -y
             export PATH="\$HOME/.cargo/bin:$PATH"
-            echo "source \$HOME/.cargo/bin" >> $GITHUB_ENV
+            
             # Clone Cloud-Hypervisor repo 
           
             # git clone https://github.com/gamora12/cloud-hypervisor.git

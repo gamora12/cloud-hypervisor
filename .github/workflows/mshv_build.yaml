@@ -36,9 +36,6 @@ jobs:
       - name: Az Login
         run: az login --identity --username ${{ secrets.CLIENT_ID }}
 
-      - name: Set Cargo Environment
-        run: source \$HOME/.cargo/bin
-
       - name: Build MSHV
         run: |
 
