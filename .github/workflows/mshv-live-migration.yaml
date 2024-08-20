@@ -10,7 +10,7 @@ jobs:
       DOM0_PASSWORD: ${{ secrets.DOM0_PASSWORD }}
     
   run_tests:
-    name: Live-MigrationTests (x86-64)
+    name: Live-Migration Tests (x86-64)
     runs-on:
       - self-hosted
       - INTEL
