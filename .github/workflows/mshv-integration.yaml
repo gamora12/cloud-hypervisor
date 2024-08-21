@@ -48,9 +48,8 @@ jobs:
             echo "Logged in"
             sudo chown -R ${{secrets.DOM0_USERNAME}} cloud-hypervisor
             cd cloud-hypervisor
-            udo USE_MS_GUEST_KERNEL=YES USE_MS_HV_FW=YES USE_MS_OVMF_FW=YES ./scripts/dev_cli.sh tests --hypervisor mshv --integration
+            sudo USE_MS_GUEST_KERNEL=YES USE_MS_HV_FW=YES USE_MS_OVMF_FW=YES ./scripts/dev_cli.sh tests --hypervisor mshv --integration
           EOF
-
       - name: Delete Resource Group
         run: |
           az group delete --name MSHVIntegration --yes --no-wait
