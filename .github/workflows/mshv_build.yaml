@@ -4,11 +4,6 @@ on:
 jobs:
   infrasetup:
     uses: ./.github/workflows/mshv-infra.yaml
-    with:
-      RG: "MSHVBuild"
-      STORAGE_ACCOUNT: "mshvbuildstorage"
-      STORAGE_ACCOUNT_PATH: ${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_BUILD }}
-      DOM0_SKU: "Standard_d16s_v5"
     secrets:
       CLIENT_ID: ${{ secrets.CLIENT_ID }}
       MSHV_STORAGE_ACCOUNT_PATH_BUILD: ${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_BUILD }}
@@ -19,6 +14,11 @@ jobs:
       SUBNET_ID: ${{ secrets.SUBNET_ID }}
       ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
       ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+    with:
+      RG: "MSHVBuild"
+      STORAGE_ACCOUNT: "mshvbuildstorage"
+      STORAGE_ACCOUNT_PATH: ${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_BUILD }}
+      DOM0_SKU: "Standard_d16s_v5"
     
   build:
     name: Build
