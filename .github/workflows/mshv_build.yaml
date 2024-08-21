@@ -23,6 +23,13 @@ jobs:
       SUBNET_ID: ${{ secrets.SUBNET_ID }}
       ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
       ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+
+  build:
+    name: Build
+    runs-on:
+      - self-hosted
+      - INTEL
+    needs: infrasetup
     strategy:
       fail-fast: false
       matrix:
@@ -34,13 +41,6 @@ jobs:
          - 'cargo build --no-default-features --features "mshv,kvm,sev_snp,igvm"'
          - 'cargo build --package vhost_user_net'
          - 'cargo build --package vhost_user_block'
-    
-  build:
-    name: Build
-    runs-on:
-      - self-hosted
-      - INTEL
-    needs: infrasetup
     steps:
 
       - name: Az Login
@@ -60,24 +60,26 @@ jobs:
           fi
           echo "Successfully retrieved private IP address"
           echo $PRIVATE_IP
-          sshpass -p "${{ secrets.DOM0_PASSWORD }}" ssh -o StrictHostKeyChecking=no "${{secrets.DOM0_USERNAME}}"@$PRIVATE_IP << EOF
+          sshpass -p "${{ secrets.DOM0_PASSWORD }}" ssh -o StrictHostKeyChecking=no "${{ secrets.DOM0_USERNAME }}"@$PRIVATE_IP << EOF
             set -x
             echo "Logged in"
             sudo tdnf install git moby-engine moby-cli dosfstools mtools build-essential m4 bison flex libuuid-devel qemu-img -y
             curl -sSf https://sh.rustup.rs | sh -s -- --default-toolchain stable --profile default -y
             export PATH="\$HOME/.cargo/bin:$PATH"
             cargo --version
-            sudo chown -R ${{secrets.DOM0_USERNAME}} cloud-hypervisor
+            sudo chown -R ${{ secrets.DOM0_USERNAME }} cloud-hypervisor
             cd cloud-hypervisor
 
             # Build Cloud-Hypervisor
             echo "Building Cloud-Hypervisor"
-            ${{matrix.BUILD_CMD}} --release
+            ${{ matrix.BUILD_CMD }} --release
           EOF
 
       - name: Delete Resource Group
         run: |
 
           # Cleanup & deletion of Resource Group
-          az group delete --name MSHVBuild --yes --no-wait
-          echo "Resource group deleted"
+          if(${{ matrix.BUILD_CMD }} == 'cargo build --package vhost_user_block') then
+            az group delete --name MSHVBuild --yes --no-wait
+            echo "Resource group deleted"
+          fi
