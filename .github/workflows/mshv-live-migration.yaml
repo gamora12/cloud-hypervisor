@@ -28,7 +28,7 @@ jobs:
     name: Live-Migration Tests (x86-64)
     runs-on:
       - self-hosted
-      - ARM
+      - INTEL
     needs: infrasetup
     steps:
 

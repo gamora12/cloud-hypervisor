@@ -74,7 +74,7 @@ jobs:
             exit 
           fi
             echo "Resource group created"
-            
+
           az storage account create --name ${{ inputs.STORAGE_ACCOUNT }} --resource-group ${{ inputs.RG }} --location ${{ inputs.Location }} --sku Standard_LRS --allow-shared-key-access false
           if [ $? -ne 0 ]; then
             echo "Storage Account creation failed"
@@ -124,7 +124,11 @@ jobs:
           # Create Blob URL for the VHD
           echo "Creating Blob URL"
           blob_url=$(az storage blob url --auth-mode login --container-name vhds --account-name ${{ inputs.STORAGE_ACCOUNT }} --name x86.vhd --output tsv)
-          echo $blob_url
+          if [ $? -ne 0 ]; then
+            echo "Blob URL creation failed"
+            exit 
+          fi
+            echo "Created Blob URL"
 
           # Create Image from the VHD
           echo "Creating Image"
