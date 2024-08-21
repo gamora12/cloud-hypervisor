@@ -23,13 +23,6 @@ jobs:
       SUBNET_ID: ${{ secrets.SUBNET_ID }}
       ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
       ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-    
-  build:
-    name: Build
-    runs-on:
-      - self-hosted
-      - INTEL
-    needs: infrasetup
     strategy:
       fail-fast: false
       matrix:
@@ -41,6 +34,13 @@ jobs:
          - 'cargo build --no-default-features --features "mshv,kvm,sev_snp,igvm"'
          - 'cargo build --package vhost_user_net'
          - 'cargo build --package vhost_user_block'
+    
+  build:
+    name: Build
+    runs-on:
+      - self-hosted
+      - INTEL
+    needs: infrasetup
     steps:
 
       - name: Az Login
