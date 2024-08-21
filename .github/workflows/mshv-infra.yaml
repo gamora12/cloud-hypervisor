@@ -123,6 +123,7 @@ jobs:
 
           # Create Blob URL for the VHD
           echo "Creating Blob URL"
+
           blob_url=$(az storage blob url --auth-mode login --container-name vhds --account-name ${{ inputs.STORAGE_ACCOUNT }} --name x86.vhd --output tsv)
           if [ $? -ne 0 ]; then
             echo "Blob URL creation failed"
@@ -132,8 +133,26 @@ jobs:
 
           # Create Image from the VHD
           echo "Creating Image"
-          az image create --resource-group ${{ inputs.RG }} --name vhd-image --source $blob_url --os-type Linux --location ${{ inputs.Location }} --hyper-v-generation V2
-          echo "Image created"
+          retry_count=5
+          retry_delay=20
+          for i in $(seq 1 $retry_count); do
+            echo "Attempt ${i} of ${retry_count}..."
+            
+            # Execute the az image create command
+            az image create --resource-group ${{ inputs.RG }} --name vhd-image --source $blob_url --os-type Linux --location ${{ inputs.Location }} --hyper-v-generation V2
+            
+            # Check if the command was successful
+            if [ $? -eq 0 ]; then
+                echo "Image created successfully!"
+                exit 0
+            else
+                echo "Failed to create image. Retrying in $retry_delay seconds..."
+                sleep $retry_delay
+            fi
+          done
+
+          # az image create --resource-group ${{ inputs.RG }} --name vhd-image --source $blob_url --os-type Linux --location ${{ inputs.Location }} --hyper-v-generation V2
+         
           az image wait --image-name vhd-image --resource-group ${{ inputs.RG }} --exists
           echo "Image is available"
           
