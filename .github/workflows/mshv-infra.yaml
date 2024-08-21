@@ -78,18 +78,13 @@ jobs:
           azcopy login --identity
           echo ${{ inputs.RG }}
           echo "AzCopy Login Succeeded"
-          if [${{ inputs.RG }} == "MSHVBuild" ]; then
+          if [ ${{ inputs.RG }} == "MSHVBuild" ]; then
             STORAGE_ACCOUNT_PATH=${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_BUILD }}
-            exit 1
-          elif [${{ inputs.RG }} == "MSHVLiveMigration" ]; then
+          elif [ ${{ inputs.RG }} == "MSHVLiveMigration" ]; then
             STORAGE_ACCOUNT_PATH=${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_LIVEMIGRATION }}
-            exit 1
-          elif [${{ inputs.RG }} == "MSHVIntegration" ]; then
+          elif [ ${{ inputs.RG }} == "MSHVIntegration" ]; then
             STORAGE_ACCOUNT_PATH=${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_INTEGRATION }}
-            exit 1
-          elif [${{ inputs.RG }} == "MSHVPerfMetrics" ]; then
-            STORAGE_ACCOUNT_PATH=${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_PERFMETRICS }}
-            exit 1
+          elif [ ${{ inputs.RG }} == "MSHVPerfMetrics" ]; then
           fi
             
           azcopy copy "${SOURCE_PATH_X86}" "${ STORAGE_ACCOUNT_PATH }"
