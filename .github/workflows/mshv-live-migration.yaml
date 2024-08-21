@@ -7,10 +7,11 @@ jobs:
     with:
       RG: "MSHVLiveMigration"
       STORAGE_ACCOUNT: "mshvlivemigrationstorage"
+      STORAGE_ACCOUNT_PATH: ${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_LIVEMIGRATION }}
       DOM0_SKU: "Standard_D64s_v4"
     secrets:
       CLIENT_ID: ${{ secrets.CLIENT_ID }}
-      STORAGE_ACCOUNT_PATH: ${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_LIVEMIGRATION }}
+      MSHV_STORAGE_ACCOUNT_PATH_LIVEMIGRATION: ${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_LIVEMIGRATION }}
       DOM0_USERNAME: ${{ secrets.DOM0_USERNAME }}
       DOM0_PASSWORD: ${{ secrets.DOM0_PASSWORD }}
       X86_SOURCE_PATH: ${{ secrets.X86_SOURCE_PATH }}
