@@ -137,18 +137,11 @@ jobs:
           retry_delay=20
           for i in $(seq 1 $retry_count); do
             echo "Attempt ${i} of ${retry_count}..."
-            
+            set -e
             # Execute the az image create command
-            output=$(az image create --resource-group ${{ inputs.RG }} --name vhd-image --source $blob_url --os-type Linux --location ${{ inputs.Location }} --hyper-v-generation V2 2>&1)
-            status=$?
-            if [ $status -eq 0 ]; then
-              echo "Image created successfully!"
-              exit 0
-            else
-              echo "Failed to create image. Retrying in $retry_delay seconds..."
-              echo "Error: $output"
-              sleep $retry_delay
-            fi
+            az image create --resource-group ${{ inputs.RG }} --name vhd-image --source $blob_url --os-type Linux --location ${{ inputs.Location }} --hyper-v-generation V2 
+            set +e
+          fi
           done
 
           # az image create --resource-group ${{ inputs.RG }} --name vhd-image --source $blob_url --os-type Linux --location ${{ inputs.Location }} --hyper-v-generation V2
