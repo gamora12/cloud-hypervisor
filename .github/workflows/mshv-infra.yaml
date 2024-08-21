@@ -17,6 +17,14 @@ on:
     secrets:
       CLIENT_ID:
         required: true
+      MSHV_STORAGE_ACCOUNT_PATH_BUILD:
+        required: true  
+      MSHV_STORAGE_ACCOUNT_PATH_LIVEMIGRATION:
+        required: true
+      MSHV_STORAGE_ACCOUNT_PATH_INTEGRATION:
+        required: true
+      MSHV_STORAGE_ACCOUNT_PATH_PERFMETRICS:
+        required: true
       DOM0_USERNAME:
         required: true
       DOM0_PASSWORD:
