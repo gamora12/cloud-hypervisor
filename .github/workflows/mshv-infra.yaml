@@ -141,7 +141,7 @@ jobs:
             # Execute the az image create command
             az image create --resource-group ${{ inputs.RG }} --name vhd-image --source $blob_url --os-type Linux --location ${{ inputs.Location }} --hyper-v-generation V2 
             set +e
-          fi
+          
           done
 
           # az image create --resource-group ${{ inputs.RG }} --name vhd-image --source $blob_url --os-type Linux --location ${{ inputs.Location }} --hyper-v-generation V2
