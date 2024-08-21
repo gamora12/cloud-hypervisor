@@ -5,7 +5,8 @@ jobs:
   infrasetup:
     uses: ./.github/workflows/mshv-infra.yaml
     with:
-      RG_NAME: "BuildRG"
+      RG: "MSHVBuild"
+      STORAGE_ACCOUNT: "MSHVbuildstorage"
       DOM0_SKU: "Standard_d16s_v5"
     secrets:
       CLIENT_ID: ${{ secrets.CLIENT_ID }}
@@ -46,7 +47,7 @@ jobs:
           echo "Retrieving VM Private IP address"
 
           # Get Private IP Address
-          PRIVATE_IP=$(az vm show -g BuildRG -n dom0_x86 -d --query privateIps -o tsv)
+          PRIVATE_IP=$(az vm show -g MSHVBuild -n dom0_x86 -d --query privateIps -o tsv)
           if [ $? -ne 0 ]; then
            echo "Failed to retrieve private IP address"
            exit 1

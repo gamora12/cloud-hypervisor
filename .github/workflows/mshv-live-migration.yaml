@@ -5,7 +5,8 @@ jobs:
   infrasetup:
     uses: ./.github/workflows/mshv-infra.yaml
     with:
-      RG_NAME: "LiveMigration"
+      RG: "MSHVLiveMigration"
+      STORAGE_ACCOUNT: "MSHVLiveMigrationStorage"
       DOM0_SKU: "Standard_D64s_v4"
     secrets:
       CLIENT_ID: ${{ secrets.CLIENT_ID }}
@@ -35,7 +36,7 @@ jobs:
           echo "Retrieving VM Private IP address"
 
           # Get Private IP Address
-          PRIVATE_IP=$(az vm show -g LiveMigration -n dom0_x86 -d --query privateIps -o tsv)
+          PRIVATE_IP=$(az vm show -g MSHVLiveMigration -n dom0_x86 -d --query privateIps -o tsv)
           if [ $? -ne 0 ]; then
            echo "Failed to retrieve private IP address"
            exit 1

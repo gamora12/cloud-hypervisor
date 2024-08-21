@@ -2,8 +2,12 @@ name: MSHV Infra Setup
 on: 
   workflow_call:
     inputs:
-      RG_NAME:
+      RG:
         description: 'Resource Group Name'
+        required: true
+        type: string
+      STORAGE_ACCOUNT:
+        description: 'Storage Account Name'
         required: true
         type: string
       DOM0_SKU: 
@@ -52,9 +56,9 @@ jobs:
       - name: Create Resource Group & Storage Account
         run: |
 
-          az group create --name ${{ inputs.RG_NAME }} --location westus2
+          az group create --name ${{ inputs.RG }} --location westus2
           echo "Resource group created"
-          az storage account create --name aastsamplestorage --resource-group ${{ inputs.RG_NAME }} --location westus2 --sku Standard_LRS --allow-shared-key-access false
+          az storage account create --name ${{ inputs.STORAGE_ACCOUNT }} --resource-group ${{ inputs.RG }} --location westus2 --sku Standard_LRS --allow-shared-key-access false
           echo "Storage account created"
       - name: Copy/Upload VHD to Azure Storage Account
         env: 
