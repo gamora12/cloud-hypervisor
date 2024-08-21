@@ -6,7 +6,7 @@ jobs:
     uses: ./.github/workflows/mshv-infra.yaml
     with:
       RG: "MSHVIntegration"
-      STORAGE_ACCOUNT: "MSHVIntegrationStorage"
+      STORAGE_ACCOUNT: "mshvintegrationstorage"
       DOM0_SKU: "Standard_d16s_v5"
     secrets:
       CLIENT_ID: ${{ secrets.CLIENT_ID }}

@@ -6,7 +6,7 @@ jobs:
     uses: ./.github/workflows/mshv-infra.yaml
     with:
       RG: "MSHVBuild"
-      STORAGE_ACCOUNT: "MSHVbuildstorage"
+      STORAGE_ACCOUNT: "mshvbuildstorage"
       DOM0_SKU: "Standard_d16s_v5"
     secrets:
       CLIENT_ID: ${{ secrets.CLIENT_ID }}

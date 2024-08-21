@@ -6,7 +6,7 @@ jobs:
     uses: ./.github/workflows/mshv-infra.yaml
     with:
       RG: "MSHVPerfMetrics"
-      STORAGE_ACCOUNT: "MSHVPerfMetricsStorage"
+      STORAGE_ACCOUNT: "mshvperfmetricsstorage"
       DOM0_SKU: "Standard_D64s_v4"
     secrets:
       CLIENT_ID: ${{ secrets.CLIENT_ID }}
