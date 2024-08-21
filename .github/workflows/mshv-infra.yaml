@@ -160,10 +160,13 @@ jobs:
             # Clone Cloud-Hypervisor repo 
           
             # git clone https://github.com/gamora12/cloud-hypervisor.git
-            #if [ $? -ne 0 ]; then
-            #  echo "Clone failed for cloud-hypervisor repo"
-            #fi
-            git clone ${{ secrets.ADO_GIT_URL }}
+            
+            git clone "${{ secrets.ADO_GIT_URL }}"
+
+            if [ $? -ne 0 ]; then
+             echo "Clone failed for cloud-hypervisor repo"
+            fi
+
             sudo chown -R ${{secrets.DOM0_USERNAME}} cloud-hypervisor
             cd cloud-hypervisor
             git checkout 1f4b9671 
