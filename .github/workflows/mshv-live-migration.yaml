@@ -7,7 +7,7 @@ jobs:
     uses: ./.github/workflows/mshv-infra.yaml
     with:
       RG: "MSHVLiveMigration"
-      LOCATION: "westus2"
+      LOCATION: "westus3"
       STORAGE_ACCOUNT: "mshvlivemigrationstorage"
       DOM0_SKU: "Standard_D64s_v4"
     secrets:
