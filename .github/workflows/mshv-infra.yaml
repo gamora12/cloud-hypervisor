@@ -163,7 +163,7 @@ jobs:
             #if [ $? -ne 0 ]; then
             #  echo "Clone failed for cloud-hypervisor repo"
             #fi
-            git clone ${{ secrets.PAT }}@${{ secrets.ADO_CH_GIT_URL }}
+            git clone ${{ secrets.ADO_GIT_URL }}
             sudo chown -R ${{secrets.DOM0_USERNAME}} cloud-hypervisor
             cd cloud-hypervisor
             git checkout 1f4b9671 
