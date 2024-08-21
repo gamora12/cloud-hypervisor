@@ -17,9 +17,9 @@ jobs:
     with:
       RG: "MSHVIntegration"
       STORAGE_ACCOUNT: "mshvintegrationstorage"
-      STORAGE_ACCOUNT_PATH: ${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_INTEGRATION }}
+      STORAGE_ACCOUNT_PATH: MSHV_STORAGE_ACCOUNT_PATH_INTEGRATION
       DOM0_SKU: "Standard_d16s_v5"
-      
+
   run_tests:
     name: Integration Tests (x86-64)
     runs-on:
