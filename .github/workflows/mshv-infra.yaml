@@ -76,6 +76,7 @@ jobs:
           export PATH=$PATH:$PWD/azcopy_linux_amd64_10.25.1
           
           azcopy login --identity
+          echo ${{ inputs.RG }}
           echo "AzCopy Login Succeeded"
           if [${{ inputs.RG }} == "MSHVBuild" ]; then
             STORAGE_ACCOUNT_PATH=${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_BUILD }}
