@@ -83,13 +83,11 @@ jobs:
             STORAGE_ACCOUNT_PATH=${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_LIVEMIGRATION }}
           elif [ ${{ inputs.RG }} == "MSHVIntegration" ]; then
             STORAGE_ACCOUNT_PATH=${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_INTEGRATION }}
-            echo "Resource group matched"
           elif [ ${{ inputs.RG }} == "MSHVPerfMetrics" ]; then
             STORAGE_ACCOUNT_PATH=${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_PERFMETRICS }}
           fi
-            echo "No resource group matched" 
             
-          azcopy copy "${SOURCE_PATH_X86}" "${ STORAGE_ACCOUNT_PATH }"
+          azcopy copy "${SOURCE_PATH_X86}" "${STORAGE_ACCOUNT_PATH}"
           
           if [ $? -ne 0 ]; then
             echo "AzCopy Failed: VHD upload failed"
