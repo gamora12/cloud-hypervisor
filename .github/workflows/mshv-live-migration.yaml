@@ -9,7 +9,7 @@ jobs:
       RG: "MSHVLiveMigration"
       LOCATION: "westus2"
       STORAGE_ACCOUNT: "mshvlivemigrationstorage"
-      DOM0_SKU: "Standard_D16s_v4"
+      DOM0_SKU: "Standard_D32ds_v4"
     secrets:
       CLIENT_ID: ${{ secrets.CLIENT_ID }}
       MSHV_STORAGE_ACCOUNT_PATH_BUILD: ${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_BUILD }}
