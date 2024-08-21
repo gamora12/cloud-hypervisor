@@ -7,15 +7,12 @@ jobs:
     with:
       RG: "MSHVPerfMetrics"
       STORAGE_ACCOUNT: "mshvperfmetricsstorage"
-      STORAGE_ACCOUNT_PATH: ${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_PERFMETRICS }}
       DOM0_SKU: "Standard_D64s_v4"
     secrets:
       CLIENT_ID: ${{ secrets.CLIENT_ID }}
-      MSHV_STORAGE_ACCOUNT_PATH_PERFMETRICS: ${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_PERFMETRICS }}
       DOM0_USERNAME: ${{ secrets.DOM0_USERNAME }}
       DOM0_PASSWORD: ${{ secrets.DOM0_PASSWORD }}
       X86_SOURCE_PATH: ${{ secrets.X86_SOURCE_PATH }}
-      MSHV_STORAGE_ACCOUNT_PATH: ${{ secrets.MSHV_STORAGE_ACCOUNT_PATH }}
       SUBNET_ID: ${{ secrets.SUBNET_ID }}
       ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
       ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}

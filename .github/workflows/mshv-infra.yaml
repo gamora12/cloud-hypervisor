@@ -10,10 +10,6 @@ on:
         description: 'Storage Account Name'
         required: true
         type: string
-      STORAGE_ACCOUNT_PATH:
-        description: 'Storage Account Path'
-        required: true
-        type: string
       DOM0_SKU: 
         description: 'Dom0 VM SKU'
         required: true
@@ -21,21 +17,11 @@ on:
     secrets:
       CLIENT_ID:
         required: true
-      MSHV_STORAGE_ACCOUNT_PATH_BUILD:
-        required: true
-      MSHV_STORAGE_ACCOUNT_PATH_LIVEMIGRATION:
-        required: true
-      MSHV_STORAGE_ACCOUNT_PATH_INTEGRATION:
-        required: true
-      MSHV_STORAGE_ACCOUNT_PATH_PERFMETRICS:
-        required: true
       DOM0_USERNAME:
         required: true
       DOM0_PASSWORD:
         required: true
       X86_SOURCE_PATH:
-        required: true
-      MSHV_STORAGE_ACCOUNT_PATH:
         required: true
       SUBNET_ID:
         required: true
@@ -75,6 +61,7 @@ jobs:
       - name: Copy/Upload VHD to Azure Storage Account
         env: 
           SOURCE_PATH_X86: ${{ secrets.X86_SOURCE_PATH}}
+          STORAGE_ACCOUNT_PATH: ""
         run: |
 
           set -x
@@ -89,7 +76,22 @@ jobs:
           export PATH=$PATH:$PWD/azcopy_linux_amd64_10.25.1
           
           azcopy login --identity
-          azcopy copy "${SOURCE_PATH_X86}" "${{ inputs.STORAGE_ACCOUNT_PATH }}"
+          echo "AzCopy Login Succeeded"
+          if [${{ inputs.RG == "MSHVBuild" }} ]; then
+            STORAGE_ACCOUNT_PATH=${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_BUILD }}
+            exit 1
+          elif [${{ inputs.RG == "MSHVLiveMigration" }} ]; then
+            STORAGE_ACCOUNT_PATH=${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_LIVEMIGRATION }}
+            exit 1
+          elif [${{ inputs.RG == "MSHVIntegration" }} ]; then
+            STORAGE_ACCOUNT_PATH=${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_INTEGRATION }}
+            exit 1
+          elif [${{ inputs.RG == "MSHVPerfMetrics" }} ]; then
+            STORAGE_ACCOUNT_PATH=${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_PERFMETRICS }}
+            exit 1
+          fi
+            
+          azcopy copy "${SOURCE_PATH_X86}" "${ STORAGE_ACCOUNT_PATH }"
           
           if [ $? -ne 0 ]; then
             echo "AzCopy Failed: VHD upload failed"
@@ -99,14 +101,14 @@ jobs:
 
           # Create Blob URL for the VHD
           echo "Creating Blob URL"
-          blob_url=$(az storage blob url --auth-mode login --container-name vhds --account-name aastsamplestorage --name x86.vhd --output tsv)
+          blob_url=$(az storage blob url --auth-mode login --container-name vhds --account-name ${{ inputs.STORAGE_ACCOUNT }} --name x86.vhd --output tsv)
           echo $blob_url
 
           # Create Image from the VHD
           echo "Creating Image"
-          az image create --resource-group ${{ inputs.RG_NAME }} --name vhd-image --source $blob_url --os-type Linux --location westus2 --hyper-v-generation V2
+          az image create --resource-group ${{ inputs.RG }} --name vhd-image --source $blob_url --os-type Linux --location westus2 --hyper-v-generation V2
           echo "Image created"
-          az image wait --image-name vhd-image --resource-group ${{ inputs.RG_NAME }} --exists
+          az image wait --image-name vhd-image --resource-group ${{ inputs.RG }} --exists
           echo "Image is available"
           
       - name: Create DOM0 VM 
@@ -116,7 +118,7 @@ jobs:
 
           # Create Dom0 VM
           echo "Creating VM"
-          vm_creation=$(az vm create --resource-group ${{ inputs.RG_NAME }} --name dom0_x86 --subnet ${{ secrets.SUBNET_ID }} --size ${{ inputs.DOM0_SKU }} --location westus2 --image vhd-image --os-disk-size-gb 512 --public-ip-sku Standard --storage-sku Premium_LRS --admin-username ${{ secrets.ADMIN_USERNAME }} --admin-password ${{ secrets.ADMIN_PASSWORD }} --public-ip-address "")
+          vm_creation=$(az vm create --resource-group ${{ inputs.RG }} --name dom0_x86 --subnet ${{ secrets.SUBNET_ID }} --size ${{ inputs.DOM0_SKU }} --location westus2 --image vhd-image --os-disk-size-gb 512 --public-ip-sku Standard --storage-sku Premium_LRS --admin-username ${{ secrets.ADMIN_USERNAME }} --admin-password ${{ secrets.ADMIN_PASSWORD }} --public-ip-address "")
           
           if [ $? -ne 0 ]; then
             echo "VM Creation Failed"
@@ -128,7 +130,7 @@ jobs:
           echo "Retrieving VM Private IP address"
           
           # Get Private IP Address
-          PRIVATE_IP=$(az vm show -g ${{ inputs.RG_NAME }} -n dom0_x86 -d --query privateIps -o tsv)
+          PRIVATE_IP=$(az vm show -g ${{ inputs.RG }} -n dom0_x86 -d --query privateIps -o tsv)
           if [ $? -ne 0 ]; then
             echo "Failed to retrieve private IP address"
             exit 1
