@@ -69,9 +69,19 @@ jobs:
         run: |
 
           az group create --name ${{ inputs.RG }} --location ${{ inputs.Location }}
-          echo "Resource group created"
+          if [ $? -ne 0 ]; then
+            echo "Resource group creation failed"
+            exit 
+          fi
+            echo "Resource group created"
+            
           az storage account create --name ${{ inputs.STORAGE_ACCOUNT }} --resource-group ${{ inputs.RG }} --location ${{ inputs.Location }} --sku Standard_LRS --allow-shared-key-access false
-          echo "Storage account created"
+          if [ $? -ne 0 ]; then
+            echo "Storage Account creation failed"
+            exit 
+          fi
+            echo "Storage Account created"
+
       - name: Copy/Upload VHD to Azure Storage Account
         env: 
           SOURCE_PATH_X86: ${{ secrets.X86_SOURCE_PATH}}
