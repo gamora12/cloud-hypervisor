@@ -54,7 +54,5 @@ jobs:
           EOF
       - name: Delete Resource Group
         run: |
-
-          # Cleanup & deletion of Resource Group
           az group delete --name MSHVPerfMetrics --yes --no-wait
           echo "Resource group deleted"
