@@ -7,6 +7,7 @@ jobs:
     with:
       RG: "MSHVBuild"
       STORAGE_ACCOUNT: "mshvbuildstorage"
+      STORAGE_ACCOUNT_PATH: ${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_BUILD }}
       DOM0_SKU: "Standard_d16s_v5"
     secrets:
       CLIENT_ID: ${{ secrets.CLIENT_ID }}

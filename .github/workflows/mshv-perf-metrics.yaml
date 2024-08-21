@@ -7,6 +7,7 @@ jobs:
     with:
       RG: "MSHVPerfMetrics"
       STORAGE_ACCOUNT: "mshvperfmetricsstorage"
+      STORAGE_ACCOUNT_PATH: ${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_PERFMETRICS }}
       DOM0_SKU: "Standard_D64s_v4"
     secrets:
       CLIENT_ID: ${{ secrets.CLIENT_ID }}

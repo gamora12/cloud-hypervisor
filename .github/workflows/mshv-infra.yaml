@@ -10,6 +10,10 @@ on:
         description: 'Storage Account Name'
         required: true
         type: string
+      STORAGE_ACCOUNT_PATH:
+        description: 'Storage Account Path'
+        required: true
+        type: string
       DOM0_SKU: 
         description: 'Dom0 VM SKU'
         required: true
@@ -63,7 +67,6 @@ jobs:
       - name: Copy/Upload VHD to Azure Storage Account
         env: 
           SOURCE_PATH_X86: ${{ secrets.X86_SOURCE_PATH}}
-          STORAGE_ACCOUNT_PATH: ${{ secrets.MSHV_STORAGE_ACCOUNT_PATH }}
         run: |
 
           set -x
@@ -78,7 +81,7 @@ jobs:
           export PATH=$PATH:$PWD/azcopy_linux_amd64_10.25.1
           
           azcopy login --identity
-          azcopy copy "${SOURCE_PATH_X86}" "${STORAGE_ACCOUNT_PATH}"
+          azcopy copy "${SOURCE_PATH_X86}" "${{ inputs.STORAGE_ACCOUNT_PATH }}"
           
           if [ $? -ne 0 ]; then
             echo "AzCopy Failed: VHD upload failed"
