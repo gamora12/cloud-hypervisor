@@ -161,15 +161,13 @@ jobs:
             curl -sSf https://sh.rustup.rs | sh -s -- --default-toolchain stable --profile default -y
             export PATH="\$HOME/.cargo/bin:$PATH"
             
-            # Clone Cloud-Hypervisor repo 
-          
-            # git clone https://github.com/gamora12/cloud-hypervisor.git
-            
+            # Clone ADO cloud-hypervisor repo
             git clone "${{ secrets.ADO_GIT_URL }}"
 
             if [ $? -ne 0 ]; then
-             echo "Clone failed for cloud-hypervisor repo"
+              echo "Clone failed for cloud-hypervisor repo"
             fi
+              echo "Clone succeeded for cloud-hypervisor repo"
 
             sudo chown -R ${{secrets.DOM0_USERNAME}} cloud-hypervisor
             cd cloud-hypervisor

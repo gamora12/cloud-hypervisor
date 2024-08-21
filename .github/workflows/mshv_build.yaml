@@ -49,11 +49,6 @@ jobs:
         run: |
 
           set -x
-
-          sudo tdnf install git moby-engine moby-cli dosfstools mtools build-essential m4 bison flex libuuid-devel qemu-img -y
-          curl -sSf https://sh.rustup.rs | sh -s -- --default-toolchain stable --profile default -y
-          export PATH="\$HOME/.cargo/bin:$PATH"
-
           echo "Retrieving VM Private IP address"
 
           # Get Private IP Address
@@ -67,6 +62,9 @@ jobs:
           sshpass -p "${{ secrets.DOM0_PASSWORD }}" ssh -o StrictHostKeyChecking=no "${{secrets.DOM0_USERNAME}}"@$PRIVATE_IP << EOF
             set -x
             echo "Logged in"
+            sudo tdnf install git moby-engine moby-cli dosfstools mtools build-essential m4 bison flex libuuid-devel qemu-img -y
+            curl -sSf https://sh.rustup.rs | sh -s -- --default-toolchain stable --profile default -y
+            export PATH="\$HOME/.cargo/bin:$PATH"
             cargo --version
             sudo chown -R ${{secrets.DOM0_USERNAME}} cloud-hypervisor
             cd cloud-hypervisor
