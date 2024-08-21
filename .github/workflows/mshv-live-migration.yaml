@@ -3,6 +3,7 @@ on:
   workflow_dispatch:
 jobs:
   infrasetup:
+    name: MSHV Infra Setup
     uses: ./.github/workflows/mshv-infra.yaml
     with:
       RG: "MSHVLiveMigration"
@@ -26,7 +27,7 @@ jobs:
     name: Live-Migration Tests (x86-64)
     runs-on:
       - self-hosted
-      - INTEL
+      - ARM
     needs: infrasetup
     steps:
 

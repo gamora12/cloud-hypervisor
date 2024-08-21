@@ -45,8 +45,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Build MSHV 
+  infrasetup:
+    name: MSHV Infra Setup
     runs-on: 
       - self-hosted
       - INTEL
@@ -97,6 +97,8 @@ jobs:
             STORAGE_ACCOUNT_PATH=${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_PERFMETRICS }}
           fi
             echo ${STORAGE_ACCOUNT_PATH}
+
+          # Copy VHD to Azure Storage Account
           azcopy copy "${SOURCE_PATH_X86}" "${STORAGE_ACCOUNT_PATH}"
           
           if [ $? -ne 0 ]; then

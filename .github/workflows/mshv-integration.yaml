@@ -3,6 +3,7 @@ on:
   workflow_dispatch:
 jobs:
   infrasetup:
+    name: MSHV Infra Setup
     uses: ./.github/workflows/mshv-infra.yaml
     with:
       RG: "MSHVIntegration"

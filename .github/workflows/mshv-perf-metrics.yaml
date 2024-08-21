@@ -26,7 +26,7 @@ jobs:
     name: Performance Metrics Tests (x86-64)
     runs-on:
       - self-hosted
-      - INTEL
+      - ARM
     needs: infrasetup
     steps:
 

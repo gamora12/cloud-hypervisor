@@ -4,6 +4,7 @@ on:
 jobs:
   infrasetup:
     uses: ./.github/workflows/mshv-infra.yaml
+    name: MSHV Infra Setup
     with:
       RG: "MSHVBuild"
       STORAGE_ACCOUNT: "mshvbuildstorage"
@@ -48,6 +49,11 @@ jobs:
         run: |
 
           set -x
+
+          sudo tdnf install git moby-engine moby-cli dosfstools mtools build-essential m4 bison flex libuuid-devel qemu-img -y
+          curl -sSf https://sh.rustup.rs | sh -s -- --default-toolchain stable --profile default -y
+          export PATH="\$HOME/.cargo/bin:$PATH"
+
           echo "Retrieving VM Private IP address"
 
           # Get Private IP Address
