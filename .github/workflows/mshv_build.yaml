@@ -70,5 +70,5 @@ jobs:
         run: |
 
           # Cleanup & deletion of Resource Group
-          # az group delete --name aasthagit --yes --no-wait
-          # echo "Resource group deleted"
+          az group delete --name MSHVBuild --yes --no-wait
+          echo "Resource group deleted"
