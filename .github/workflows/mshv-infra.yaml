@@ -138,10 +138,12 @@ jobs:
           for i in $(seq 1 $retry_count); do
             echo "Attempt ${i} of ${retry_count}..."
             set -e
-            # Execute the az image create command
             az image create --resource-group ${{ inputs.RG }} --name vhd-image --source $blob_url --os-type Linux --location ${{ inputs.Location }} --hyper-v-generation V2 || true
             set +e
-          
+            if az image show --name $image_name --resource-group $resource_group &>/dev/null; then
+              break
+            fi
+
           done
 
           # az image create --resource-group ${{ inputs.RG }} --name vhd-image --source $blob_url --os-type Linux --location ${{ inputs.Location }} --hyper-v-generation V2
