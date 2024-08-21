@@ -29,6 +29,8 @@ on:
         required: true
       DOM0_PASSWORD:
         required: true
+      ADO_GIT_URL:
+        required: true
       X86_SOURCE_PATH:
         required: true
       SUBNET_ID:
@@ -148,7 +150,7 @@ jobs:
           echo "Removing the old host key"
           ssh-keygen -R $PRIVATE_IP
           echo "SSH into the VM"
-          sshpass -p "${{ secrets.DOM0_PASSWORD }}" ssh -o StrictHostKeyChecking=no "${{secrets.DOM0_USERNAME}}"@$PRIVATE_IP << EOF
+          sshpass -p "${{ secrets.DOM0_PASSWORD }}" ssh -o StrictHostKeyChecking=no "${{ secrets.DOM0_USERNAME }}"@$PRIVATE_IP << EOF
             set -x
             echo "Logged in"
 

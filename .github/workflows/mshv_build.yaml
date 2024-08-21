@@ -16,6 +16,7 @@ jobs:
       MSHV_STORAGE_ACCOUNT_PATH_PERFMETRICS: ${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_PERFMETRICS }}
       DOM0_USERNAME: ${{ secrets.DOM0_USERNAME }}
       DOM0_PASSWORD: ${{ secrets.DOM0_PASSWORD }}
+      ADO_GIT_URL: ${{ secrets.ADO_GIT_URL }}
       X86_SOURCE_PATH: ${{ secrets.X86_SOURCE_PATH }}
       SUBNET_ID: ${{ secrets.SUBNET_ID }}
       ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
