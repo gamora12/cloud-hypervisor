@@ -7,6 +7,7 @@ jobs:
     uses: ./.github/workflows/mshv-infra.yaml
     with:
       RG: "MSHVIntegration"
+      LOCATION: "westus2"
       STORAGE_ACCOUNT: "mshvintegrationstorage"
       DOM0_SKU: "Standard_d16s_v5"
     secrets:

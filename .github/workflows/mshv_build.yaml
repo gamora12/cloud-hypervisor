@@ -7,6 +7,7 @@ jobs:
     name: MSHV Infra Setup
     with:
       RG: "MSHVBuild"
+      LOCATION: "westus2"
       STORAGE_ACCOUNT: "mshvbuildstorage"
       DOM0_SKU: "Standard_d16s_v5"
     secrets:

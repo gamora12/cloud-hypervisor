@@ -7,8 +7,9 @@ jobs:
     uses: ./.github/workflows/mshv-infra.yaml
     with:
       RG: "MSHVLiveMigration"
+      LOCATION: "westus3"
       STORAGE_ACCOUNT: "mshvlivemigrationstorage"
-      DOM0_SKU: "Standard_D48s_v4"
+      DOM0_SKU: "Standard_D64s_v4"
     secrets:
       CLIENT_ID: ${{ secrets.CLIENT_ID }}
       MSHV_STORAGE_ACCOUNT_PATH_BUILD: ${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_BUILD }}

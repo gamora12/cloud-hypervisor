@@ -6,6 +6,10 @@ on:
         description: 'Resource Group Name'
         required: true
         type: string
+      LOCATION:
+        description: 'Location'
+        required: true
+        type: string
       STORAGE_ACCOUNT:
         description: 'Storage Account Name'
         required: true
@@ -64,9 +68,9 @@ jobs:
       - name: Create Resource Group & Storage Account
         run: |
 
-          az group create --name ${{ inputs.RG }} --location westus2
+          az group create --name ${{ inputs.RG }} --location ${{ inputs.Location }}
           echo "Resource group created"
-          az storage account create --name ${{ inputs.STORAGE_ACCOUNT }} --resource-group ${{ inputs.RG }} --location westus2 --sku Standard_LRS --allow-shared-key-access false
+          az storage account create --name ${{ inputs.STORAGE_ACCOUNT }} --resource-group ${{ inputs.RG }} --location ${{ inputs.Location }} --sku Standard_LRS --allow-shared-key-access false
           echo "Storage account created"
       - name: Copy/Upload VHD to Azure Storage Account
         env: 
@@ -103,7 +107,7 @@ jobs:
           
           if [ $? -ne 0 ]; then
             echo "AzCopy Failed: VHD upload failed"
-            exit 1
+            exit 
           fi
             echo "AzCopy Succeeded: VHD upload complete"
 
@@ -114,7 +118,7 @@ jobs:
 
           # Create Image from the VHD
           echo "Creating Image"
-          az image create --resource-group ${{ inputs.RG }} --name vhd-image --source $blob_url --os-type Linux --location westus2 --hyper-v-generation V2
+          az image create --resource-group ${{ inputs.RG }} --name vhd-image --source $blob_url --os-type Linux --location ${{ inputs.Location }} --hyper-v-generation V2
           echo "Image created"
           az image wait --image-name vhd-image --resource-group ${{ inputs.RG }} --exists
           echo "Image is available"
@@ -126,7 +130,7 @@ jobs:
 
           # Create Dom0 VM
           echo "Creating VM"
-          vm_creation=$(az vm create --resource-group ${{ inputs.RG }} --name dom0_x86 --subnet ${{ secrets.SUBNET_ID }} --size ${{ inputs.DOM0_SKU }} --location westus2 --image vhd-image --os-disk-size-gb 512 --public-ip-sku Standard --storage-sku Premium_LRS --admin-username ${{ secrets.ADMIN_USERNAME }} --admin-password ${{ secrets.ADMIN_PASSWORD }} --public-ip-address "")
+          vm_creation=$(az vm create --resource-group ${{ inputs.RG }} --name dom0_x86 --subnet ${{ secrets.SUBNET_ID }} --size ${{ inputs.DOM0_SKU }} --location ${{ inputs.Location }} --image vhd-image --os-disk-size-gb 512 --public-ip-sku Standard --storage-sku Premium_LRS --admin-username ${{ secrets.ADMIN_USERNAME }} --admin-password ${{ secrets.ADMIN_PASSWORD }} --public-ip-address "")
           
           if [ $? -ne 0 ]; then
             echo "VM Creation Failed"
@@ -169,7 +173,7 @@ jobs:
             fi
               echo "Clone succeeded for cloud-hypervisor repo"
 
-            sudo chown -R ${{secrets.DOM0_USERNAME}} cloud-hypervisor
+            sudo chown -R ${{ secrets.DOM0_USERNAME }} cloud-hypervisor
             cd cloud-hypervisor
             git checkout 1f4b9671 
 
@@ -187,6 +191,6 @@ jobs:
             sudo systemctl enable containerd.service
             sudo systemctl start docker
             sudo groupadd -f docker
-            sudo usermod -a -G docker ${{secrets.DOM0_USERNAME}}
+            sudo usermod -a -G docker ${{ secrets.DOM0_USERNAME }}
             sudo systemctl restart docker
           EOF

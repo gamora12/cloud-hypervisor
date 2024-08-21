@@ -3,9 +3,11 @@ on:
   workflow_dispatch:
 jobs:
   infrasetup:
+    name: MSHV Infra Setup
     uses: ./.github/workflows/mshv-infra.yaml
     with:
       RG: "MSHVPerfMetrics"
+      LOCATION: "westus2"
       STORAGE_ACCOUNT: "mshvperfmetricsstorage"
       DOM0_SKU: "Standard_D64s_v4"
     secrets:
