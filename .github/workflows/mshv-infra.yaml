@@ -85,7 +85,9 @@ jobs:
           elif [ ${{ inputs.RG }} == "MSHVIntegration" ]; then
             STORAGE_ACCOUNT_PATH=${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_INTEGRATION }}
           elif [ ${{ inputs.RG }} == "MSHVPerfMetrics" ]; then
+            STORAGE_ACCOUNT_PATH=${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_PERFMETRICS }}
           fi
+            echo "No resource group matched" 
             
           azcopy copy "${SOURCE_PATH_X86}" "${ STORAGE_ACCOUNT_PATH }"
           
