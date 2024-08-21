@@ -46,7 +46,7 @@ jobs:
           echo "Retrieving VM Private IP address"
 
           # Get Private IP Address
-          PRIVATE_IP=$(az vm show -g ${{ inputs.RG_NAME }} -n dom0_x86 -d --query privateIps -o tsv)
+          PRIVATE_IP=$(az vm show -g BuildRG -n dom0_x86 -d --query privateIps -o tsv)
           if [ $? -ne 0 ]; then
            echo "Failed to retrieve private IP address"
            exit 1
