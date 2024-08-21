@@ -43,53 +43,42 @@ on:
         required: true
       ADMIN_PASSWORD: 
         required: true
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
 jobs:
   infrasetup:
     name: MSHV Infra Setup
     runs-on: 
       - self-hosted
       - INTEL
-  
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
       - name: Install & login to AZ CLI
         run: |
-
           sudo apt-get install -y azure-cli
           az login --identity --username ${{ secrets.CLIENT_ID }}
-
       - name: Create Resource Group & Storage Account
         run: |
-
           az group create --name ${{ inputs.RG }} --location ${{ inputs.Location }}
           if [ $? -ne 0 ]; then
             echo "Resource group creation failed"
             exit 
           fi
             echo "Resource group created"
-
           az storage account create --name ${{ inputs.STORAGE_ACCOUNT }} --resource-group ${{ inputs.RG }} --location ${{ inputs.Location }} --sku Standard_LRS --allow-shared-key-access false
           if [ $? -ne 0 ]; then
             echo "Storage Account creation failed"
             exit 
           fi
             echo "Storage Account created"
-
       - name: Copy/Upload VHD to Azure Storage Account
         env: 
           SOURCE_PATH_X86: ${{ secrets.X86_SOURCE_PATH}}
           STORAGE_ACCOUNT_PATH: ""
         run: |
-
           set -x
-
           # Login to Azure
           az login --identity --username ${{ secrets.CLIENT_ID }}
 
@@ -98,7 +87,6 @@ jobs:
           wget https://aka.ms/downloadazcopy-v10-linux
           tar -xvzf downloadazcopy-v10-linux
           export PATH=$PATH:$PWD/azcopy_linux_amd64_10.25.1
-          
           azcopy login --identity
           echo "AzCopy Login Succeeded"
           if [ ${{ inputs.RG }} == "MSHVBuild" ]; then
@@ -111,29 +99,24 @@ jobs:
             STORAGE_ACCOUNT_PATH=${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_PERFMETRICS }}
           fi
             echo ${STORAGE_ACCOUNT_PATH}
-
           # Copy VHD to Azure Storage Account
           azcopy copy "${SOURCE_PATH_X86}" "${STORAGE_ACCOUNT_PATH}"
-          
           if [ $? -ne 0 ]; then
             echo "AzCopy Failed: VHD upload failed"
             exit 
           fi
             echo "AzCopy Succeeded: VHD upload complete"
-
           # Create Blob URL for the VHD
           echo "Creating Blob URL"
-
           blob_url=$(az storage blob url --auth-mode login --container-name vhds --account-name ${{ inputs.STORAGE_ACCOUNT }} --name x86.vhd --output tsv)
           if [ $? -ne 0 ]; then
             echo "Blob URL creation failed"
             exit 
           fi
             echo "Created Blob URL"
-
           # Create Image from the VHD
           echo "Creating Image"
-          retry_count=5
+          retry_count=2
           retry_delay=20
           for i in $(seq 1 $retry_count); do
             echo "Attempt ${i} of ${retry_count}..."
@@ -143,32 +126,22 @@ jobs:
             if az image show --name $image_name --resource-group $resource_group &>/dev/null; then
               break
             fi
-
           done
 
-          # az image create --resource-group ${{ inputs.RG }} --name vhd-image --source $blob_url --os-type Linux --location ${{ inputs.Location }} --hyper-v-generation V2
-         
           az image wait --image-name vhd-image --resource-group ${{ inputs.RG }} --exists
           echo "Image is available"
           
       - name: Create DOM0 VM 
         run: |
-
-          set -x
-
-          # Create Dom0 VM
           echo "Creating VM"
           vm_creation=$(az vm create --resource-group ${{ inputs.RG }} --name dom0_x86 --subnet ${{ secrets.SUBNET_ID }} --size ${{ inputs.DOM0_SKU }} --location ${{ inputs.Location }} --image vhd-image --os-disk-size-gb 512 --public-ip-sku Standard --storage-sku Premium_LRS --admin-username ${{ secrets.ADMIN_USERNAME }} --admin-password ${{ secrets.ADMIN_PASSWORD }} --public-ip-address "")
-          
           if [ $? -ne 0 ]; then
             echo "VM Creation Failed"
             exit 1
           fi
             echo "VM Creation Succeeded"
           echo $vm_creation
-          
           echo "Retrieving VM Private IP address"
-          
           # Get Private IP Address
           PRIVATE_IP=$(az vm show -g ${{ inputs.RG }} -n dom0_x86 -d --query privateIps -o tsv)
           if [ $? -ne 0 ]; then
@@ -204,15 +177,6 @@ jobs:
             sudo chown -R ${{ secrets.DOM0_USERNAME }} cloud-hypervisor
             cd cloud-hypervisor
             git checkout 1f4b9671 
-
-            #git fetch origin
-            # Checkout the given commit of cloud-hypervisor repo and build
-            # git checkout ${{ github.sha }}
-            #if [ $? -ne 0 ]; then
-            #  echo "Checkout failed for: ${{ github.sha }}"
-            #  exit 1
-            #fi
-        
             sudo mkdir -p /etc/docker/
             echo '{"default-ulimits":{"nofile":{"Hard":65535,"Name":"nofile","Soft":65535}}}' | sudo tee /etc/docker/daemon.json
             sudo systemctl enable docker.service

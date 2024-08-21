@@ -23,7 +23,6 @@ jobs:
       SUBNET_ID: ${{ secrets.SUBNET_ID }}
       ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
       ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-
   build:
     name: Build
     runs-on:
@@ -42,17 +41,12 @@ jobs:
          - 'cargo build --package vhost_user_net'
          - 'cargo build --package vhost_user_block'
     steps:
-
       - name: Az Login
         run: az login --identity --username ${{ secrets.CLIENT_ID }}
-
       - name: Build MSHV
         run: |
-
           set -x
           echo "Retrieving VM Private IP address"
-
-          # Get Private IP Address
           PRIVATE_IP=$(az vm show -g MSHVBuild -n dom0_x86 -d --query privateIps -o tsv)
           if [ $? -ne 0 ]; then
            echo "Failed to retrieve private IP address"
@@ -69,16 +63,12 @@ jobs:
             cargo --version
             sudo chown -R ${{ secrets.DOM0_USERNAME }} cloud-hypervisor
             cd cloud-hypervisor
-
             # Build Cloud-Hypervisor
             echo "Building Cloud-Hypervisor"
             ${{ matrix.BUILD_CMD }} --release
           EOF
-
       - name: Delete Resource Group
         run: |
-
-          # Cleanup & deletion of Resource Group
           if(${{ matrix.BUILD_CMD }} == 'cargo build --package vhost_user_block') then
             az group delete --name MSHVBuild --yes --no-wait
             echo "Resource group deleted"
