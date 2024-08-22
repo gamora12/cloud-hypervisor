@@ -31,7 +31,9 @@ jobs:
     needs: infrasetup
     steps:
       - name: Az Login
-        run: az login --identity --username ${{ secrets.CLIENT_ID }}
+        run: |
+          sudo apt-get install -y azure-cli
+          az login --identity --username ${{ secrets.CLIENT_ID }}
       - name: Run performance metrics tests
         run: |
           set -x
