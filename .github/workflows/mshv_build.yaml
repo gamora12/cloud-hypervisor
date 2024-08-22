@@ -68,8 +68,7 @@ jobs:
             ${{ matrix.BUILD_CMD }} --release
           EOF
       - name: Delete Resource Group
+        if: ${{ matrix.BUILD_CMD  == 'cargo build --package vhost_user_block' }}
         run: |
-          if( "${{ matrix.BUILD_CMD }}" == "cargo build --package vhost_user_block") then
             az group delete --name MSHVBuild --yes --no-wait
             echo "Resource group deleted"
-          fi
