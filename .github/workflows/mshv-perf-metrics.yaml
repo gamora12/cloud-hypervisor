@@ -9,7 +9,7 @@ jobs:
       RG: "MSHVPerfMetrics"
       LOCATION: "westus2"
       STORAGE_ACCOUNT: "mshvperfmetricsstorage"
-      DOM0_SKU: "Standard_D32ds_v4"
+      DOM0_SKU: "Standard_D48lds_v5"
     secrets:
       CLIENT_ID: ${{ secrets.CLIENT_ID }}
       MSHV_STORAGE_ACCOUNT_PATH_BUILD: ${{ secrets.MSHV_STORAGE_ACCOUNT_PATH_BUILD }}
