@@ -27,7 +27,7 @@ jobs:
     name: Performance Metrics Tests (x86-64)
     runs-on:
       - self-hosted
-      - ARM
+      - INTEL
     needs: infrasetup
     steps:
       - name: Az Login
