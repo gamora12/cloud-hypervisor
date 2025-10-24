@@ -21,7 +21,6 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Barrier, Mutex};
 use std::{cmp, io, result, thread};
 
-#[cfg(not(target_arch = "riscv64"))]
 use acpi_tables::sdt::Sdt;
 use acpi_tables::{Aml, aml};
 use anyhow::anyhow;
@@ -330,6 +329,47 @@ struct ProcessorHierarchyNode {
     pub num_private_resources: u32,
 }
 
+#[cfg(target_arch = "riscv64")]
+#[allow(dead_code)]
+#[repr(C, packed)]
+#[derive(IntoBytes, Immutable, FromBytes)]
+struct Imsic {
+    pub r#type: u8,
+    pub length: u8,
+    pub version: u8,
+    pub reserved: u8,
+    pub flags: u32,
+    /// Number of supervisor mode Interrupt Identities
+    pub n_supervisor_int_id: u16,
+    /// Number of guest mode Interrupt Identities
+    pub n_guest_int_id: u16,
+    pub geust_index_bits: u8,
+    pub hart_index_bits: u8,
+    pub group_index_bits: u8,
+    pub group_index_shift: u8,
+}
+
+#[cfg(target_arch = "riscv64")]
+#[allow(dead_code)]
+#[repr(C, packed)]
+#[derive(IntoBytes, Immutable, FromBytes)]
+struct Aplic {
+    pub r#type: u8,
+    pub length: u8,
+    pub version: u8,
+    pub aplic_id: u8,
+    pub flags: u32,
+    pub hardware_id: u64,
+    /// Number of Interrupt Delivery Control (IDC) structures
+    pub n_idc: u16,
+    /// Total External Interrupt Sources Supported
+    pub n_external_inc_sources: u16,
+    /// Global System Interrupt Base
+    pub gsi_inc_base: u32,
+    pub aplic_addr: u64,
+    pub aplic_size: u32,
+}
+
 #[allow(dead_code)]
 #[repr(C, packed)]
 #[derive(Default, IntoBytes, Immutable, FromBytes)]
@@ -352,7 +392,7 @@ macro_rules! round_up {
 /// A wrapper around creating and using a kvm-based VCPU.
 pub struct Vcpu {
     // The hypervisor abstracted CPU.
-    vcpu: Arc<dyn hypervisor::Vcpu>,
+    vcpu: Box<dyn hypervisor::Vcpu>,
     id: u32,
     #[cfg(target_arch = "aarch64")]
     mpidr: u64,
@@ -410,15 +450,16 @@ impl Vcpu {
         #[cfg(target_arch = "aarch64")]
         {
             self.init(vm)?;
-            self.mpidr = arch::configure_vcpu(&self.vcpu, self.id, boot_setup)
+            self.mpidr = arch::configure_vcpu(self.vcpu.as_ref(), self.id, boot_setup)
                 .map_err(Error::VcpuConfiguration)?;
         }
         #[cfg(target_arch = "riscv64")]
-        arch::configure_vcpu(&self.vcpu, self.id, boot_setup).map_err(Error::VcpuConfiguration)?;
+        arch::configure_vcpu(self.vcpu.as_ref(), self.id, boot_setup)
+            .map_err(Error::VcpuConfiguration)?;
         info!("Configuring vCPU: cpu_id = {}", self.id);
         #[cfg(target_arch = "x86_64")]
         arch::configure_vcpu(
-            &self.vcpu,
+            self.vcpu.as_ref(),
             self.id,
             boot_setup,
             cpuid,
@@ -475,7 +516,7 @@ impl Vcpu {
     ///
     /// Note that the state of the VCPU and associated VM must be setup first for this to do
     /// anything useful.
-    pub fn run(&self) -> std::result::Result<VmExit, HypervisorCpuError> {
+    pub fn run(&mut self) -> std::result::Result<VmExit, HypervisorCpuError> {
         self.vcpu.run()
     }
 
@@ -644,6 +685,7 @@ struct VcpuState {
     handle: Option<thread::JoinHandle<()>>,
     kill: Arc<AtomicBool>,
     vcpu_run_interrupted: Arc<AtomicBool>,
+    /// Used to ACK state changes from the run vCPU loop to the CPU Manager.
     paused: Arc<AtomicBool>,
 }
 
@@ -1012,9 +1054,9 @@ impl CpuManager {
         #[cfg(feature = "guest_debug")]
         let vm_debug_evt = self.vm_debug_evt.try_clone().unwrap();
         let panic_exit_evt = self.exit_evt.try_clone().unwrap();
-        let vcpu_kill_signalled = self.vcpus_kill_signalled.clone();
-        let vcpu_pause_signalled = self.vcpus_pause_signalled.clone();
-        let vcpu_kick_signalled = self.vcpus_kick_signalled.clone();
+        let vcpus_kill_signalled = self.vcpus_kill_signalled.clone();
+        let vcpus_pause_signalled = self.vcpus_pause_signalled.clone();
+        let vcpus_kick_signalled = self.vcpus_kick_signalled.clone();
 
         let vcpu_kill = self.vcpu_states[usize::try_from(vcpu_id).unwrap()]
             .kill
@@ -1107,7 +1149,7 @@ impl CpuManager {
                             // loads and stores to different atomics and we need
                             // to see them in a consistent order in all threads
 
-                            if vcpu_pause_signalled.load(Ordering::SeqCst) {
+                            if vcpus_pause_signalled.load(Ordering::SeqCst) {
                                 // As a pause can be caused by PIO & MMIO exits then we need to ensure they are
                                 // completed by returning to KVM_RUN. From the kernel docs:
                                 //
@@ -1125,24 +1167,25 @@ impl CpuManager {
 
                                 #[cfg(feature = "kvm")]
                                 if matches!(hypervisor_type, HypervisorType::Kvm) {
-                                    vcpu.lock().as_ref().unwrap().vcpu.set_immediate_exit(true);
+                                    vcpu.lock().unwrap().vcpu.set_immediate_exit(true);
                                     if !matches!(vcpu.lock().unwrap().run(), Ok(VmExit::Ignore)) {
                                         error!("Unexpected VM exit on \"immediate_exit\" run");
                                         break;
                                     }
-                                    vcpu.lock().as_ref().unwrap().vcpu.set_immediate_exit(false);
+                                    vcpu.lock().unwrap().vcpu.set_immediate_exit(false);
                                 }
 
                                 vcpu_run_interrupted.store(true, Ordering::SeqCst);
 
                                 vcpu_paused.store(true, Ordering::SeqCst);
-                                while vcpu_pause_signalled.load(Ordering::SeqCst) {
+                                while vcpus_pause_signalled.load(Ordering::SeqCst) {
                                     thread::park();
                                 }
+                                vcpu_paused.store(false, Ordering::SeqCst);
                                 vcpu_run_interrupted.store(false, Ordering::SeqCst);
                             }
 
-                            if vcpu_kick_signalled.load(Ordering::SeqCst) {
+                            if vcpus_kick_signalled.load(Ordering::SeqCst) {
                                 vcpu_run_interrupted.store(true, Ordering::SeqCst);
                                 #[cfg(target_arch = "x86_64")]
                                 match vcpu.lock().as_ref().unwrap().vcpu.nmi() {
@@ -1155,17 +1198,14 @@ impl CpuManager {
                             }
 
                             // We've been told to terminate
-                            if vcpu_kill_signalled.load(Ordering::SeqCst)
+                            if vcpus_kill_signalled.load(Ordering::SeqCst)
                                 || vcpu_kill.load(Ordering::SeqCst)
                             {
                                 vcpu_run_interrupted.store(true, Ordering::SeqCst);
                                 break;
                             }
 
-                            #[cfg(feature = "tdx")]
                             let mut vcpu = vcpu.lock().unwrap();
-                            #[cfg(not(feature = "tdx"))]
-                            let vcpu = vcpu.lock().unwrap();
                             // vcpu.run() returns false on a triple-fault so trigger a reset
                             match vcpu.run() {
                                 Ok(run) => match run {
@@ -1174,7 +1214,7 @@ impl CpuManager {
                                         info!("VmExit::Debug");
                                         #[cfg(feature = "guest_debug")]
                                         {
-                                            vcpu_pause_signalled.store(true, Ordering::SeqCst);
+                                            vcpus_pause_signalled.store(true, Ordering::SeqCst);
                                             let raw_tid = get_raw_tid(vcpu_id as usize);
                                             vm_debug_evt.write(raw_tid as u64).unwrap();
                                         }
@@ -1206,8 +1246,7 @@ impl CpuManager {
                                     }
                                     #[cfg(feature = "tdx")]
                                     VmExit::Tdx => {
-                                        if let Some(vcpu) = Arc::get_mut(&mut vcpu.vcpu) {
-                                            match vcpu.get_tdx_exit_details() {
+                                            match vcpu.vcpu.get_tdx_exit_details() {
                                                 Ok(details) => match details {
                                                     TdxExitDetails::GetQuote => warn!("TDG_VP_VMCALL_GET_QUOTE not supported"),
                                                     TdxExitDetails::SetupEventNotifyInterrupt => {
@@ -1216,13 +1255,7 @@ impl CpuManager {
                                                 },
                                                 Err(e) => error!("Unexpected TDX VMCALL: {}", e),
                                             }
-                                            vcpu.set_tdx_status(TdxExitStatus::InvalidOperand);
-                                        } else {
-                                            // We should never reach this code as
-                                            // this means the design from the code
-                                            // is wrong.
-                                            unreachable!("Couldn't get a mutable reference from Arc<dyn Vcpu> as there are multiple instances");
-                                        }
+                                            vcpu.vcpu.set_tdx_status(TdxExitStatus::InvalidOperand);
                                     }
                                 },
 
@@ -1235,7 +1268,7 @@ impl CpuManager {
                             }
 
                             // We've been told to terminate
-                            if vcpu_kill_signalled.load(Ordering::SeqCst)
+                            if vcpus_kill_signalled.load(Ordering::SeqCst)
                                 || vcpu_kill.load(Ordering::SeqCst)
                             {
                                 vcpu_run_interrupted.store(true, Ordering::SeqCst);
@@ -1487,7 +1520,6 @@ impl CpuManager {
         })
     }
 
-    #[cfg(not(target_arch = "riscv64"))]
     pub fn create_madt(&self, #[cfg(target_arch = "aarch64")] vgic: Arc<Mutex<dyn Vgic>>) -> Sdt {
         use crate::acpi;
         // This is also checked in the commandline parsing.
@@ -1629,6 +1661,55 @@ impl CpuManager {
                 };
                 madt.append(gicits);
             }
+
+            madt.update_checksum();
+        }
+
+        #[cfg(target_arch = "riscv64")]
+        {
+            /* Notes:
+             * Ignore Local Interrupt Controller Address at byte offset 36 of MADT table.
+             */
+
+            let mut hart_index_bits = 0;
+            while (1 << hart_index_bits) < self.config.boot_vcpus {
+                hart_index_bits += 1;
+            }
+
+            // See section 5.2.12.28. RISC-V Incoming MSI Controller (IMSIC)
+            // Structure in ACPI spec.
+            let imsic = Imsic {
+                r#type: acpi::ACPI_RISC_V_IMSIC,
+                length: 16,
+                version: 1,
+                reserved: 0,
+                flags: 0,
+                n_supervisor_int_id: arch::riscv64::CLOUDHV_IRQCHIP_NUM_MSIS,
+                n_guest_int_id: arch::riscv64::CLOUDHV_IRQCHIP_NUM_MSIS,
+                geust_index_bits: 1,
+                hart_index_bits: hart_index_bits,
+                group_index_bits: 1,
+                // IMSIC_MMIO_GROUP_MIN_SHIFT
+                group_index_shift: 24,
+            };
+            madt.append(imsic);
+
+            // See section 5.2.12.29. RISC-V Advanced Platform Level Interrupt
+            // Controller (APLIC) Structure in ACPI spec.
+            let aplic = Aplic {
+                r#type: acpi::ACPI_RISC_V_APLIC,
+                length: 36,
+                version: 1,
+                aplic_id: 0,
+                flags: 0,
+                hardware_id: 0,
+                n_idc: 0,
+                n_external_inc_sources: arch::riscv64::CLOUDHV_IRQCHIP_NUM_SOURCES as u16,
+                gsi_inc_base: arch::layout::IRQ_BASE,
+                aplic_addr: arch::layout::APLIC_START.0,
+                aplic_size: arch::layout::APLIC_SIZE as u32,
+            };
+            madt.append(aplic);
 
             madt.update_checksum();
         }
@@ -2350,10 +2431,9 @@ impl Pausable for CpuManager {
 
         self.signal_vcpus();
 
+        #[cfg(all(feature = "kvm", target_arch = "x86_64"))]
         for vcpu in self.vcpus.iter() {
-            let mut vcpu = vcpu.lock().unwrap();
-            vcpu.pause()?;
-            #[cfg(all(feature = "kvm", target_arch = "x86_64"))]
+            let vcpu = vcpu.lock().unwrap();
             if !self.config.kvm_hyperv {
                 vcpu.vcpu.notify_guest_clock_paused().map_err(|e| {
                     MigratableError::Pause(anyhow!(
@@ -2367,6 +2447,7 @@ impl Pausable for CpuManager {
         // activated vCPU change their state to ensure they have parked.
         for state in self.vcpu_states.iter() {
             if state.active() {
+                // wait for vCPU to update state
                 while !state.paused.load(Ordering::SeqCst) {
                     // To avoid a priority inversion with the vCPU thread
                     thread::sleep(std::time::Duration::from_millis(1));
@@ -2378,20 +2459,26 @@ impl Pausable for CpuManager {
     }
 
     fn resume(&mut self) -> std::result::Result<(), MigratableError> {
-        for vcpu in self.vcpus.iter() {
-            vcpu.lock().unwrap().resume()?;
-        }
-
-        // Toggle the vCPUs pause boolean
+        // Ensure that vCPUs keep running after being unpark() in
+        // their run vCPU loop.
         self.vcpus_pause_signalled.store(false, Ordering::SeqCst);
 
-        // Unpark all the VCPU threads.
-        // Once unparked, the next thing they will do is checking for the pause
-        // boolean. Since it'll be set to false, they will exit their pause loop
-        // and go back to vmx root.
-        for state in self.vcpu_states.iter() {
-            state.paused.store(false, Ordering::SeqCst);
-            state.unpark_thread();
+        // Unpark all the vCPU threads.
+        // Step 1/2: signal each thread
+        {
+            for state in self.vcpu_states.iter() {
+                state.unpark_thread();
+            }
+        }
+        // Step 2/2: wait for state ACK
+        {
+            for state in self.vcpu_states.iter() {
+                // wait for vCPU to update state
+                while state.paused.load(Ordering::SeqCst) {
+                    // To avoid a priority inversion with the vCPU thread
+                    thread::sleep(std::time::Duration::from_millis(1));
+                }
+            }
         }
         Ok(())
     }
@@ -2915,7 +3002,7 @@ mod tests {
         let lint0_mode_expected = set_apic_delivery_mode(lint0, APIC_MODE_EXTINT);
         let lint1_mode_expected = set_apic_delivery_mode(lint1, APIC_MODE_NMI);
 
-        set_lint(&vcpu).unwrap();
+        set_lint(vcpu.as_ref()).unwrap();
 
         // Compute the value that represents LVT0 and LVT1 after set_lint.
         let klapic_actual: LapicState = vcpu.get_lapic().unwrap();
@@ -2932,7 +3019,7 @@ mod tests {
             .create_vm(HypervisorVmConfig::default())
             .expect("new VM fd creation failed");
         let vcpu = vm.create_vcpu(0, None).unwrap();
-        setup_fpu(&vcpu).unwrap();
+        setup_fpu(vcpu.as_ref()).unwrap();
 
         let expected_fpu: FpuState = FpuState {
             fcw: 0x37f,
@@ -2958,7 +3045,7 @@ mod tests {
             .create_vm(HypervisorVmConfig::default())
             .expect("new VM fd creation failed");
         let vcpu = vm.create_vcpu(0, None).unwrap();
-        setup_msrs(&vcpu).unwrap();
+        setup_msrs(vcpu.as_ref()).unwrap();
 
         // This test will check against the last MSR entry configured (the tenth one).
         // See create_msr_entries for details.
@@ -2993,7 +3080,7 @@ mod tests {
         expected_regs.set_rip(1);
 
         setup_regs(
-            &vcpu,
+            vcpu.as_ref(),
             arch::EntryPoint {
                 entry_addr: vm_memory::GuestAddress(expected_regs.get_rip()),
                 setup_header: None,
@@ -3020,7 +3107,7 @@ mod tests {
         expected_regs.set_rsi(ZERO_PAGE_START.0);
 
         setup_regs(
-            &vcpu,
+            vcpu.as_ref(),
             arch::EntryPoint {
                 entry_addr: vm_memory::GuestAddress(expected_regs.get_rip()),
                 setup_header: Some(setup_header {
