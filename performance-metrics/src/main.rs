@@ -1783,15 +1783,15 @@ fn main() {
         .arg(
             Arg::new("test-filter")
                 .long("test-filter")
-                .help("Filter metrics tests to run based on provided keywords")
-                .num_args(1)
+                .help("Filter metrics tests to run based on provided keywords. Accepts multiple occurrences and comma-separated lists.")
+                .num_args(1..)
                 .required(false),
         )
         .arg(
             Arg::new("test-exclude")
                 .long("test-exclude")
-                .help("Exclude metrics tests matching the provided keywords")
-                .num_args(1)
+                .help("Exclude metrics tests matching the provided keywords. Accepts multiple occurrences and comma-separated lists.")
+                .num_args(1..)
                 .required(false),
         )
         .arg(

@@ -24,6 +24,12 @@ To get a list of available performance tests:
 $ ./scripts/dev_cli.sh tests --metrics -- -- --list-tests
 ```
 
+To exclude specific tests (comma-separated or by repeating the flag):
+
+```
+$ ./scripts/dev_cli.sh tests --metrics -- -- --test-exclude restore_latency_time_ms,another_test --report-file /tmp/metrics.json
+```
+
 To generate metrics data for selected performance tests, e.g. boot time only:
 
 ```
