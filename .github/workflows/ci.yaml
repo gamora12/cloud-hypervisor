@@ -757,6 +757,21 @@ jobs:
       - name: Run CVM (SEV-SNP) integration tests
         timeout-minutes: 20
         run: scripts/dev_cli.sh tests --integration-cvm --hypervisor kvm
+  integration-mshv-x86-64:
+    name: integration-mshv-x86-64
+    needs: [preflight, dco, quality, build]
+    if: >-
+      needs.preflight.outputs.full == 'true' && needs.dco.result == 'success' && needs.quality.result == 'success' && needs.build.result == 'success'
+    timeout-minutes: 35
+    runs-on: mshv
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Run integration tests
+        timeout-minutes: 30
+        run: scripts/dev_cli.sh tests --integration
   # Rate-limiter host is not available
   # integration-rate-limiter:
   #   name: integration-rate-limiter
@@ -789,6 +804,7 @@ jobs:
       - integration-sev-snp
       # VFIO worker is failing #8160
       # - integration-vfio
+      - integration-mshv-x86-64
       - integration-windows
       - integration-x86-64-mq
       - integration-x86-64-pr
