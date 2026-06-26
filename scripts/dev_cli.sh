@@ -801,7 +801,7 @@ done
 
 # $1 is now a command name. Check if it is a valid command and, if so,
 # run it.
-#
+# test
 declare -f "cmd_$1" >/dev/null
 ok_or_die "Unknown command: $1. Please use \`$0 help\` for help."
 
