@@ -765,11 +765,8 @@ jobs:
     timeout-minutes: 35
     runs-on: mshv
     steps:
-      # mshv runner user is "lsgunner"
-      - name: Fix workspace and Docker socket permissions
-        run: |
-          sudo chown -R lsgrunner:lsgrunner ${GITHUB_WORKSPACE}
-          sudo chmod 666 /var/run/docker.sock
+      - name: Fix Docker socket permissions
+        run: sudo chmod 666 /var/run/docker.sock
       - name: Code checkout
         uses: actions/checkout@v6
         with:
