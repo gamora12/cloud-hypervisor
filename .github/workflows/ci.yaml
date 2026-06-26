@@ -765,6 +765,9 @@ jobs:
     timeout-minutes: 35
     runs-on: mshv
     steps:
+      # mshv runner user is "lsgunner"
+      - name: Fix workspace permissions
+        run: sudo chown -R lsgunner:lsgunner ${GITHUB_WORKSPACE}
       - name: Code checkout
         uses: actions/checkout@v6
         with:
