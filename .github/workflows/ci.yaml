@@ -767,7 +767,7 @@ jobs:
     steps:
       # mshv runner user is "lsgunner"
       - name: Fix workspace permissions
-        run: sudo chown -R lsgunner:lsgunner ${GITHUB_WORKSPACE}
+        run: sudo chown -R lsgrunner:lsgrunner ${GITHUB_WORKSPACE}
       - name: Code checkout
         uses: actions/checkout@v6
         with:
